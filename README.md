@@ -1,2 +1,2 @@
-# SAM_Template
-## SAM template repo
+# SAM_OpenStudio
+## SAM OpenStudio Repository
