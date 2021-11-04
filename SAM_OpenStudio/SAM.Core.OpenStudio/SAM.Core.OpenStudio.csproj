@@ -91,6 +91,6 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>Copy /Y "$(SolutionDir)references\*.dll" "$(SolutionDir)build\*.dll"</PostBuildEvent>
+    <PostBuildEvent>::Copy /Y "$(SolutionDir)references\*.dll" "$(SolutionDir)build\*.dll"</PostBuildEvent>
   </PropertyGroup>
 </Project>
