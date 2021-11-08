@@ -12,7 +12,6 @@
                 return null;
 
             global::OpenStudio.SqlFile sqlFile = new global::OpenStudio.SqlFile(openStudioPath);
-
             return sqlFile;
         }
     }
