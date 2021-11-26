@@ -2,7 +2,7 @@
 using System;
 using System.Drawing;
 
-namespace SAM.Analytical.Grasshopper.TMP
+namespace SAM.Analytical.Grasshopper.OpenStudio
 {
     public class AssemblyInfo : GH_AssemblyInfo
     {

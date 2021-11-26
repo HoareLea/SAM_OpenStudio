@@ -1,6 +1,6 @@
 ﻿namespace SAM.Core.OpenStudio
 {
-    public static partial class Query
+    public static partial class Create
     {
         public static global::OpenStudio.SqlFile SqlFile(string path)
         {
