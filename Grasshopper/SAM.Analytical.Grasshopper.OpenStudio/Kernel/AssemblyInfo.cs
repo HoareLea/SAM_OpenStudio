@@ -45,7 +45,7 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         {
             get
             {
-                return new Guid("1ae4f9c8-1b85-4407-814b-a74ada02d160");
+                return new Guid("e8eff328-083d-4963-a6c7-d5b4bab3d5e0");
             }
         }
 
