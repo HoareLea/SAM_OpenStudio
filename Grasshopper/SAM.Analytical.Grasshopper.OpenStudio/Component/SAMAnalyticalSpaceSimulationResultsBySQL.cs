@@ -1,5 +1,4 @@
 ﻿using Grasshopper.Kernel;
-using SAM.Analytical.Grasshopper.OpenStudio.Properties;
 using SAM.Core.Grasshopper;
 using System;
 
@@ -20,7 +19,7 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         /// <summary>
         /// Provides an Icon for the component.
         /// </summary>
-        protected override System.Drawing.Bitmap Icon => Resources.SAM_Small;
+        protected override System.Drawing.Bitmap Icon => Properties.Resources.SAM_Small;
 
         /// <summary>
         /// Initializes a new instance of the SAMGeometryByGHGeometry class.
