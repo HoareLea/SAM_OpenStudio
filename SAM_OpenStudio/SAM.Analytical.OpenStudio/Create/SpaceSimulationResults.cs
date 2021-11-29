@@ -79,7 +79,91 @@ namespace SAM.Analytical.OpenStudio
                     dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "NominalLighting", "ObjectName", "DesignLevel");
                     if(dataTable != null)
                     {
+                        int index_ObjectName = dataTable.Columns.IndexOf("ObjectName");
+                        int index_DesignLevel = dataTable.Columns.IndexOf("DesignLevel");
+                        if (index_ObjectName != -1 && index_DesignLevel != -1)
+                        {
+                            foreach (SpaceSimulationResult spaceSimulationResult in result)
+                            {
+                                //if(!spaceSimulationResult.TryGetValue(SpaceSimulationResultParameter.Area, out double area))
+                                //{
+                                //    continue;
+                                //}
 
+                                List<int> indexes = Core.Query.FindIndexes(dataTable, "ObjectName", spaceSimulationResult.Name);
+                                if(indexes == null || indexes.Count ==0)
+                                {
+                                    continue;
+                                }
+
+                                if(!Core.Query.TryConvert(dataTable.Rows[indexes[0]][index_DesignLevel], out double designLevel))
+                                {
+                                    continue;
+                                }
+
+                                spaceSimulationResult.SetValue(SpaceSimulationResultParameter.LightingGain, designLevel);
+                            }
+                        }
+                    }
+
+                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "NominalInfiltration", "ObjectName", "DesignLevel");
+                    if (dataTable != null)
+                    {
+                        int index_ObjectName = dataTable.Columns.IndexOf("ObjectName");
+                        int index_DesignLevel = dataTable.Columns.IndexOf("DesignLevel");
+                        if (index_ObjectName != -1 && index_DesignLevel != -1)
+                        {
+                            foreach (SpaceSimulationResult spaceSimulationResult in result)
+                            {
+                                //if(!spaceSimulationResult.TryGetValue(SpaceSimulationResultParameter.Area, out double area))
+                                //{
+                                //    continue;
+                                //}
+
+                                List<int> indexes = Core.Query.FindIndexes(dataTable, "ObjectName", spaceSimulationResult.Name);
+                                if (indexes == null || indexes.Count == 0)
+                                {
+                                    continue;
+                                }
+
+                                if (!Core.Query.TryConvert(dataTable.Rows[indexes[0]][index_DesignLevel], out double designLevel))
+                                {
+                                    continue;
+                                }
+
+                                spaceSimulationResult.SetValue(SpaceSimulationResultParameter.InfiltrationGain, designLevel);
+                            }
+                        }
+                    }
+
+                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "NominalElectricEquipment", "ObjectName", "DesignLevel");
+                    if (dataTable != null)
+                    {
+                        int index_ObjectName = dataTable.Columns.IndexOf("ObjectName");
+                        int index_DesignLevel = dataTable.Columns.IndexOf("DesignLevel");
+                        if (index_ObjectName != -1 && index_DesignLevel != -1)
+                        {
+                            foreach (SpaceSimulationResult spaceSimulationResult in result)
+                            {
+                                //if(!spaceSimulationResult.TryGetValue(SpaceSimulationResultParameter.Area, out double area))
+                                //{
+                                //    continue;
+                                //}
+
+                                List<int> indexes = Core.Query.FindIndexes(dataTable, "ObjectName", spaceSimulationResult.Name);
+                                if (indexes == null || indexes.Count == 0)
+                                {
+                                    continue;
+                                }
+
+                                if (!Core.Query.TryConvert(dataTable.Rows[indexes[0]][index_DesignLevel], out double designLevel))
+                                {
+                                    continue;
+                                }
+
+                                spaceSimulationResult.SetValue(SpaceSimulationResultParameter.EquipmentSensibleGain, designLevel);
+                            }
+                        }
                     }
 
                 }
