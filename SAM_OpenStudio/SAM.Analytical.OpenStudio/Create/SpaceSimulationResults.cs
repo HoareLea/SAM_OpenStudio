@@ -75,6 +75,13 @@ namespace SAM.Analytical.OpenStudio
                         }
 
                     }
+
+                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "NominalLighting", "ObjectName", "DesignLevel");
+                    if(dataTable != null)
+                    {
+
+                    }
+
                 }
             }
 
