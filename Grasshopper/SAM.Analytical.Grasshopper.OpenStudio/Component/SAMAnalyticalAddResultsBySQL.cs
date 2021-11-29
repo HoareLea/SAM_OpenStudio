@@ -37,8 +37,8 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         /// </summary>
         protected override void RegisterInputParams(GH_InputParamManager inputParamManager)
         {
-            inputParamManager.AddTextParameter("_sQLPath", "_sQLPath", "SQL File Path", GH_ParamAccess.item);
             inputParamManager.AddParameter(new GooAnalyticalObjectParam(), "_analytical", "_analytical", "SAM Analytical Object such as AdjacencyCluster or AnalyticalModel", GH_ParamAccess.item);
+            inputParamManager.AddTextParameter("_sQLPath", "_sQLPath", "SQL File Path", GH_ParamAccess.item);
         }
 
         /// <summary>
@@ -56,16 +56,15 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         /// <param name="dataAccess">The DA object is used to retrieve from inputs and store in outputs.</param>
         protected override void SolveInstance(IGH_DataAccess dataAccess)
         {
-            string path = null;
-
-            if (!dataAccess.GetData(0, ref path) || path == null)
+            IAnalyticalObject analyticalObject = null;
+            if (!dataAccess.GetData(0, ref analyticalObject) || analyticalObject == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
                 return;
             }
 
-            IAnalyticalObject analyticalObject = null;
-            if (!dataAccess.GetData(1, ref analyticalObject) || analyticalObject == null)
+            string path = null;
+            if (!dataAccess.GetData(1, ref path) || path == null)
             {
                 AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
                 return;

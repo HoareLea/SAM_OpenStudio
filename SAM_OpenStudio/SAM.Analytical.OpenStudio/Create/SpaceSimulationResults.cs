@@ -76,10 +76,10 @@ namespace SAM.Analytical.OpenStudio
 
                     }
 
-                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "NominalLighting", "ObjectName", "DesignLevel");
+                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "NominalLighting", "ZoneIndex", "DesignLevel");
                     if(dataTable != null)
                     {
-                        int index_ObjectName = dataTable.Columns.IndexOf("ObjectName");
+                        int index_ObjectName = dataTable.Columns.IndexOf("ZoneIndex");
                         int index_DesignLevel = dataTable.Columns.IndexOf("DesignLevel");
                         if (index_ObjectName != -1 && index_DesignLevel != -1)
                         {
@@ -90,7 +90,12 @@ namespace SAM.Analytical.OpenStudio
                                 //    continue;
                                 //}
 
-                                List<int> indexes = Core.Query.FindIndexes(dataTable, "ObjectName", spaceSimulationResult.Name);
+                                if(!int.TryParse(spaceSimulationResult.Reference, out int zoneIndex))
+                                {
+                                    continue;
+                                }
+
+                                List<int> indexes = Core.Query.FindIndexes(dataTable, "ZoneIndex", zoneIndex);
                                 if(indexes == null || indexes.Count ==0)
                                 {
                                     continue;
@@ -106,10 +111,10 @@ namespace SAM.Analytical.OpenStudio
                         }
                     }
 
-                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "NominalInfiltration", "ObjectName", "DesignLevel");
+                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "NominalInfiltration", "ZoneIndex", "DesignLevel");
                     if (dataTable != null)
                     {
-                        int index_ObjectName = dataTable.Columns.IndexOf("ObjectName");
+                        int index_ObjectName = dataTable.Columns.IndexOf("ZoneIndex");
                         int index_DesignLevel = dataTable.Columns.IndexOf("DesignLevel");
                         if (index_ObjectName != -1 && index_DesignLevel != -1)
                         {
@@ -120,7 +125,12 @@ namespace SAM.Analytical.OpenStudio
                                 //    continue;
                                 //}
 
-                                List<int> indexes = Core.Query.FindIndexes(dataTable, "ObjectName", spaceSimulationResult.Name);
+                                if (!int.TryParse(spaceSimulationResult.Reference, out int zoneIndex))
+                                {
+                                    continue;
+                                }
+
+                                List<int> indexes = Core.Query.FindIndexes(dataTable, "ZoneIndex", zoneIndex);
                                 if (indexes == null || indexes.Count == 0)
                                 {
                                     continue;
@@ -136,10 +146,10 @@ namespace SAM.Analytical.OpenStudio
                         }
                     }
 
-                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "NominalElectricEquipment", "ObjectName", "DesignLevel");
+                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "NominalElectricEquipment", "ZoneIndex", "DesignLevel");
                     if (dataTable != null)
                     {
-                        int index_ObjectName = dataTable.Columns.IndexOf("ObjectName");
+                        int index_ObjectName = dataTable.Columns.IndexOf("ZoneIndex");
                         int index_DesignLevel = dataTable.Columns.IndexOf("DesignLevel");
                         if (index_ObjectName != -1 && index_DesignLevel != -1)
                         {
@@ -150,7 +160,12 @@ namespace SAM.Analytical.OpenStudio
                                 //    continue;
                                 //}
 
-                                List<int> indexes = Core.Query.FindIndexes(dataTable, "ObjectName", spaceSimulationResult.Name);
+                                if (!int.TryParse(spaceSimulationResult.Reference, out int zoneIndex))
+                                {
+                                    continue;
+                                }
+
+                                List<int> indexes = Core.Query.FindIndexes(dataTable, "ZoneIndex", zoneIndex);
                                 if (indexes == null || indexes.Count == 0)
                                 {
                                     continue;
