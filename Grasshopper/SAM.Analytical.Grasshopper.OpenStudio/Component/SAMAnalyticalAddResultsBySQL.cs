@@ -15,7 +15,7 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         /// <summary>
         /// The latest version of this component
         /// </summary>
-        public override string LatestComponentVersion => "1.0.0";
+        public override string LatestComponentVersion => "1.0.1";
 
         /// <summary>
         /// Provides an Icon for the component.
@@ -47,7 +47,7 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         protected override void RegisterOutputParams(GH_OutputParamManager outputParamManager)
         {
             outputParamManager.AddParameter(new GooAnalyticalObjectParam(), "analytical", "analytical", "SAM Analytical Object such as AdjacencyCluster or AnalyticalModel", GH_ParamAccess.item);
-            outputParamManager.AddParameter(new GooResultParam(), "spaceSymulationResults", "spaceSymulationResults", "SAM Analytical SpaceSimulationResults", GH_ParamAccess.list);
+            outputParamManager.AddParameter(new GooResultParam(), "spaceSimulationResults", "spaceSimulationResults", "SAM Analytical SpaceSimulationResults", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -87,7 +87,9 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
             }
             else if(analyticalObject is BuildingModel)
             {
-
+                BuildingModel buildingModel = new BuildingModel((BuildingModel)analyticalObject);
+                results = Analytical.OpenStudio.Modify.AddResults(buildingModel, path);
+                analyticalObject = buildingModel;
             }
 
             dataAccess.SetData(0, analyticalObject);

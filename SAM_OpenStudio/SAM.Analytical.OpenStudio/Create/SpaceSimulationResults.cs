@@ -181,6 +181,53 @@ namespace SAM.Analytical.OpenStudio
                         }
                     }
 
+                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "ReportDataDictionary", "ReportDataDictionaryIndex", "KeyValue", "Name");
+                    if(dataTable != null)
+                    {
+                        DataTable dataTable_ReportData = Core.SQLite.Query.DataTable(sQLiteConnection, "ReportData", "ReportDataDictionaryIndex", "TimeIndex", "Name");
+
+                        foreach (SpaceSimulationResult spaceSimulationResult in result)
+                        {
+                            if(spaceSimulationResult == null)
+                            {
+                                continue;
+                            }
+
+                            if(!spaceSimulationResult.TryGetValue(SpaceSimulationResultParameter.LoadIndex, out int index))
+                            {
+                                continue;
+                            }
+
+                            LoadType loadType = spaceSimulationResult.LoadType();
+                            if(loadType == LoadType.Undefined)
+                            {
+                                continue;
+                            }
+                            
+                            string name = loadType == LoadType.Cooling ? "Zone Infiltration Sensible Heat Gain Energy" : "Zone Infiltration Sensible Heat Loss Energy";
+
+                            int reportDataDictionaryIndex = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name, spaceSimulationResult.Name);
+                            if(reportDataDictionaryIndex != -1)
+                            {
+                                SortedDictionary<int, double> reportData = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex);
+                                if(!reportData.TryGetValue(index, out double value))
+                                {
+                                    continue;
+                                }
+
+                                if(loadType == LoadType.Cooling)
+                                {
+                                    value = -value;
+                                }
+
+                                spaceSimulationResult.SetValue(SpaceSimulationResultParameter.InfiltrationGain, value);
+                            }
+
+                        }
+
+                        
+                    }
+
                 }
             }
 
