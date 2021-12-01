@@ -88,7 +88,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Classes\ShortDate.cs" />
+    <Compile Include="Classes\ShortDateTime.cs" />
     <Compile Include="Convert\ToSystem\Strings.cs" />
     <Compile Include="Convert\ToSystem\Doubles.cs" />
     <Compile Include="Create\ShortDateTime.cs" />
