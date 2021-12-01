@@ -200,7 +200,7 @@ namespace SAM.Analytical.OpenStudio
                         }
                     }
 
-                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "ReportDataDictionary", "ReportDataDictionaryIndex", "KeyValue", "Name");
+                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "ReportDataDictionary", "ReportDataDictionaryIndex", "KeyValue", "Name", "Units");
                     if(dataTable != null)
                     {
                         DataTable dataTable_Time = Core.SQLite.Query.DataTable(sQLiteConnection, "Time", "TimeIndex", "Year", "Month", "Day", "Hour", "Minute", "Dst", "EnvironmentPeriodIndex");
@@ -242,7 +242,18 @@ namespace SAM.Analytical.OpenStudio
                                     continue;
                                 }
 
-                                if(loadType == LoadType.Cooling)
+                                string units = Core.OpenStudio.Query.Units(dataTable, name, spaceSimulationResult.Name);
+                                if(!string.IsNullOrWhiteSpace(units))
+                                {
+                                    switch(units.Trim())
+                                    {
+                                        case "J":
+                                            value = value / 3600;
+                                            break;
+                                    }
+                                }
+
+                                if (loadType == LoadType.Heating)
                                 {
                                     value = -value;
                                 }

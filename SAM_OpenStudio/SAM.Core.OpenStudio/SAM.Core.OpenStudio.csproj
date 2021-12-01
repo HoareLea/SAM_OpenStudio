@@ -99,6 +99,7 @@
     <Compile Include="Create\Model.cs" />
     <Compile Include="Query\ReportData.cs" />
     <Compile Include="Query\EnvironmentPeriodIndex.cs" />
+    <Compile Include="Query\Units.cs" />
     <Compile Include="Query\ReportDataDictionaryIndex.cs" />
     <Compile Include="Query\TimeIndex.cs" />
     <Compile Include="Query\Values.cs" />
