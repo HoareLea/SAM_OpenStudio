@@ -98,7 +98,9 @@
     <Compile Include="Query\AvailableTimeSeriesNames.cs" />
     <Compile Include="Create\Model.cs" />
     <Compile Include="Query\ReportData.cs" />
+    <Compile Include="Query\ReportDataDictionary.cs" />
     <Compile Include="Query\EnvironmentPeriodIndex.cs" />
+    <Compile Include="Query\ConvertUnit.cs" />
     <Compile Include="Query\Units.cs" />
     <Compile Include="Query\ReportDataDictionaryIndex.cs" />
     <Compile Include="Query\TimeIndex.cs" />

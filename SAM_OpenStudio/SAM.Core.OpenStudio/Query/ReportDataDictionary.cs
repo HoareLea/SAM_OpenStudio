@@ -1,54 +1,56 @@
-﻿using System.Data;
+﻿using System.Collections.Generic;
+using System.Data;
 
 namespace SAM.Core.OpenStudio
 {
     public static partial class Query
     {
-        public static double ReportData(this DataTable dataTable, int reportDataDictionaryIndex, int timeIndex)
+        public static SortedDictionary<int, double> ReportDataDictionary(this DataTable dataTable, int reportDataDictionaryIndex)
         {
             if(dataTable == null || reportDataDictionaryIndex == -1)
             {
-                return double.NaN;
+                return null;
             }
 
             DataColumnCollection dataColumnCollection = dataTable.Columns;
             if (dataColumnCollection == null)
             {
-                return double.NaN;
+                return null;
             }
 
             int index_ReportDataDictionaryIndex = dataColumnCollection.IndexOf("ReportDataDictionaryIndex");
             if (index_ReportDataDictionaryIndex == -1)
             {
-                return double.NaN;
+                return null;
             }
 
             int index_TimeIndex = dataColumnCollection.IndexOf("TimeIndex");
             if (index_TimeIndex == -1)
             {
-                return double.NaN;
+                return null;
             }
 
             int index_Value = dataColumnCollection.IndexOf("Value");
             if (index_Value == -1)
             {
-                return double.NaN;
+                return null;
             }
 
             DataRowCollection dataRowCollection = dataTable.Rows;
             if (dataRowCollection == null)
             {
-                return double.NaN;
+                return null;
             }
 
+            SortedDictionary<int, double> result = new SortedDictionary<int, double>();
             foreach (DataRow dataRow in dataRowCollection)
             {
-                if (!Core.Query.TryConvert(dataRow[index_ReportDataDictionaryIndex], out int reportDataDictionaryIndex_Temp) || !reportDataDictionaryIndex.Equals(reportDataDictionaryIndex_Temp))
+                if (!Core.Query.TryConvert(dataRow[index_ReportDataDictionaryIndex], out int reportDataDictionaryIndex_Temp))
                 {
                     continue;
                 }
 
-                if (!Core.Query.TryConvert(dataRow[index_TimeIndex], out int timeIndex_Temp) || !timeIndex.Equals(timeIndex_Temp))
+                if(!reportDataDictionaryIndex.Equals(reportDataDictionaryIndex_Temp))
                 {
                     continue;
                 }
@@ -58,10 +60,15 @@ namespace SAM.Core.OpenStudio
                     continue;
                 }
 
-                return value_Temp;
+                if (!Core.Query.TryConvert(dataRow[index_TimeIndex], out int timeIndex_Temp))
+                {
+                    continue;
+                }
+
+                result[timeIndex_Temp] = value_Temp;
             }
 
-            return double.NaN;
+            return result;
         }
     }
 }
