@@ -60,12 +60,12 @@ namespace SAM.Analytical.OpenStudio
                 
                 if(index_FloorArea != -1 && Core.Query.TryConvert(values[index_FloorArea], out double floorArea))
                 {
-                    spaceSimulationResult.SetValue(SpaceSimulationResultParameter.Area, floorArea);
+                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.Area, floorArea);
                 }
 
                 if (index_Volume != -1 && Core.Query.TryConvert(values[index_Volume], out double volume))
                 {
-                    spaceSimulationResult.SetValue(SpaceSimulationResultParameter.Volume, volume);
+                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.Volume, volume);
                 }
 
                 result.Add(spaceSimulationResult);

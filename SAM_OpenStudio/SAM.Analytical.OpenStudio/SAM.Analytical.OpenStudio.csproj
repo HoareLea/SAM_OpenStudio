@@ -91,9 +91,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Convert\ToDateTime\ToDateTime.cs" />
     <Compile Include="Convert\ToSAM\SpaceSimulationResults.cs" />
     <Compile Include="Create\SpaceSimulationResults.cs" />
+    <Compile Include="Enums\Parameter\SpaceSimulationResultParameter.cs" />
     <Compile Include="Modify\AddResults.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query\Source.cs" />
@@ -109,7 +109,6 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Classes\" />
-    <Folder Include="Enums\" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">

@@ -88,20 +88,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Classes\ShortDate.cs" />
     <Compile Include="Convert\ToSystem\Strings.cs" />
     <Compile Include="Convert\ToSystem\Doubles.cs" />
+    <Compile Include="Create\ShortDateTime.cs" />
     <Compile Include="Enums\ReportingFrequency.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Query\AvailableEnviromentPeriodsNames.cs" />
     <Compile Include="Query\AvailableTimeSeriesNames.cs" />
     <Compile Include="Create\Model.cs" />
     <Compile Include="Query\ReportData.cs" />
+    <Compile Include="Query\EnvironmentPeriodIndex.cs" />
     <Compile Include="Query\ReportDataDictionaryIndex.cs" />
+    <Compile Include="Query\TimeIndex.cs" />
     <Compile Include="Query\Values.cs" />
     <Compile Include="Create\SqlFile.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Classes\" />
     <Folder Include="Interfaces\" />
     <Folder Include="Modify\" />
   </ItemGroup>

@@ -27,7 +27,9 @@ namespace SAM.Analytical.OpenStudio
 
                 if(result != null && result.Count != 0)
                 {
-                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "ZoneSizes", "ZoneName", "LoadType", "CalcDesLoad", "PeakHrMin", "PeakTemp", "PeakHumRat");
+                    DataTable dataTable_EnvironmentPeriods = Core.SQLite.Query.DataTable(sQLiteConnection, "EnvironmentPeriods", "EnvironmentPeriodIndex", "EnvironmentName");
+
+                    dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "ZoneSizes", "ZoneName", "LoadType", "CalcDesLoad", "DesDayName","PeakHrMin", "PeakTemp", "PeakHumRat");
                     if (dataTable != null)
                     {
                         int index_ZoneName = dataTable.Columns.IndexOf("ZoneName");
@@ -36,6 +38,7 @@ namespace SAM.Analytical.OpenStudio
                         {
                             int index_CalcDesLoad = dataTable.Columns.IndexOf("CalcDesLoad");
                             int index_PeakHrMin = dataTable.Columns.IndexOf("PeakHrMin");
+                            int index_DesDayName = dataTable.Columns.IndexOf("DesDayName");
 
                             List<SpaceSimulationResult> spaceSimulationResults = new List<SpaceSimulationResult>();
                             foreach(SpaceSimulationResult spaceSimulationResult in result)
@@ -48,21 +51,37 @@ namespace SAM.Analytical.OpenStudio
                                         DataRow dataRow = dataTable.Rows[index];
 
                                         SpaceSimulationResult spaceSimulationResult_LoadType = new SpaceSimulationResult(Guid.NewGuid(), spaceSimulationResult);
-                                        spaceSimulationResult_LoadType.SetValue(SpaceSimulationResultParameter.LoadType, dataRow[index_LoadType]);
+                                        spaceSimulationResult_LoadType.SetValue(Analytical.SpaceSimulationResultParameter.LoadType, dataRow[index_LoadType]);
                                         
                                         if(index_CalcDesLoad != -1)
                                         {
-                                            spaceSimulationResult_LoadType.SetValue(SpaceSimulationResultParameter.DesignLoad, dataRow[index_CalcDesLoad]);
+                                            spaceSimulationResult_LoadType.SetValue(Analytical.SpaceSimulationResultParameter.DesignLoad, dataRow[index_CalcDesLoad]);
+                                        }
+
+                                        if(index_DesDayName != -1)
+                                        {
+                                            if(spaceSimulationResult_LoadType.SetValue(SpaceSimulationResultParameter.DesignDayName, dataRow[index_DesDayName]))
+                                            {
+                                                if (dataTable_EnvironmentPeriods != null)
+                                                {
+                                                    int environmentPeriodIndex = Core.OpenStudio.Query.EnvironmentPeriodIndex(dataTable_EnvironmentPeriods, spaceSimulationResult_LoadType.GetValue<string>(SpaceSimulationResultParameter.DesignDayName));
+                                                    if(environmentPeriodIndex != -1)
+                                                    {
+                                                        spaceSimulationResult_LoadType.SetValue(SpaceSimulationResultParameter.DesignDayIndex, environmentPeriodIndex);
+                                                    }
+                                                }
+                                            }
+
                                         }
 
                                         if (index_PeakHrMin != -1)
                                         {
-                                            if (Core.Query.TryConvert(dataRow[index_PeakHrMin], out string dateString))
+                                            if (Core.Query.TryConvert(dataRow[index_PeakHrMin], out string peakDate))
                                             {
-                                                DateTime? dateTime = Convert.ToDateTime(dateString);
-                                                if(dateTime != null && dateTime.HasValue)
+                                                Core.OpenStudio.ShortDateTime shortDateTime = Core.OpenStudio.Create.ShortDateTime(peakDate);
+                                                if(shortDateTime != null)
                                                 {
-                                                    spaceSimulationResult_LoadType.SetValue(SpaceSimulationResultParameter.LoadIndex, Core.Query.HourOfYear(dateTime.Value));
+                                                    spaceSimulationResult_LoadType.SetValue(SpaceSimulationResultParameter.PeakDate, shortDateTime);
                                                 }
                                             }
                                         }
@@ -106,7 +125,7 @@ namespace SAM.Analytical.OpenStudio
                                     continue;
                                 }
 
-                                spaceSimulationResult.SetValue(SpaceSimulationResultParameter.LightingGain, designLevel);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.LightingGain, designLevel);
                             }
                         }
                     }
@@ -141,7 +160,7 @@ namespace SAM.Analytical.OpenStudio
                                     continue;
                                 }
 
-                                spaceSimulationResult.SetValue(SpaceSimulationResultParameter.InfiltrationGain, designLevel);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.InfiltrationGain, designLevel);
                             }
                         }
                     }
@@ -176,7 +195,7 @@ namespace SAM.Analytical.OpenStudio
                                     continue;
                                 }
 
-                                spaceSimulationResult.SetValue(SpaceSimulationResultParameter.EquipmentSensibleGain, designLevel);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.EquipmentSensibleGain, designLevel);
                             }
                         }
                     }
@@ -184,7 +203,8 @@ namespace SAM.Analytical.OpenStudio
                     dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "ReportDataDictionary", "ReportDataDictionaryIndex", "KeyValue", "Name");
                     if(dataTable != null)
                     {
-                        DataTable dataTable_ReportData = Core.SQLite.Query.DataTable(sQLiteConnection, "ReportData", "ReportDataDictionaryIndex", "TimeIndex", "Name");
+                        DataTable dataTable_Time = Core.SQLite.Query.DataTable(sQLiteConnection, "Time", "TimeIndex", "Year", "Month", "Day", "Hour", "Minute", "Dst", "EnvironmentPeriodIndex");
+                        DataTable dataTable_ReportData = Core.SQLite.Query.DataTable(sQLiteConnection, "ReportData", "ReportDataDictionaryIndex", "TimeIndex", "Value");
 
                         foreach (SpaceSimulationResult spaceSimulationResult in result)
                         {
@@ -193,7 +213,12 @@ namespace SAM.Analytical.OpenStudio
                                 continue;
                             }
 
-                            if(!spaceSimulationResult.TryGetValue(SpaceSimulationResultParameter.LoadIndex, out int index))
+                            if(!spaceSimulationResult.TryGetValue(SpaceSimulationResultParameter.PeakDate, out Core.OpenStudio.ShortDateTime peakDate))
+                            {
+                                continue;
+                            }
+
+                            if (!spaceSimulationResult.TryGetValue(SpaceSimulationResultParameter.DesignDayIndex, out int designDayIndex))
                             {
                                 continue;
                             }
@@ -210,7 +235,9 @@ namespace SAM.Analytical.OpenStudio
                             if(reportDataDictionaryIndex != -1)
                             {
                                 SortedDictionary<int, double> reportData = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex);
-                                if(!reportData.TryGetValue(index, out double value))
+                                int timeIndex = Core.OpenStudio.Query.TimeIndex(dataTable_Time, peakDate, designDayIndex);
+
+                                if(!reportData.TryGetValue(timeIndex, out double value))
                                 {
                                     continue;
                                 }
@@ -220,7 +247,7 @@ namespace SAM.Analytical.OpenStudio
                                     value = -value;
                                 }
 
-                                spaceSimulationResult.SetValue(SpaceSimulationResultParameter.InfiltrationGain, value);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.InfiltrationGain, value);
                             }
 
                         }
