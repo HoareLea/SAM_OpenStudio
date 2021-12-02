@@ -108,6 +108,7 @@
     <Reference Include="System.Windows.Forms" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Component\SAMAnalyticalDesignDaysBySQL.cs" />
     <Compile Include="Component\SAMAnalyticalAddResultsBySQL.cs" />
     <Compile Include="Component\SAMAnalyticalSpaceSimulationResultsBySQL.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
