@@ -63,7 +63,7 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
 
             List<DesignDay> result = Analytical.OpenStudio.Create.DesignDays(path);
 
-            dataAccess.SetData(0, result);
+            dataAccess.SetDataList(0, result);
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
+using System.Threading.Tasks;
 
 namespace SAM.Analytical.OpenStudio
 {
@@ -22,6 +23,8 @@ namespace SAM.Analytical.OpenStudio
                 DataTable dataTable_Time = Core.SQLite.Query.DataTable(sQLiteConnection, "Time", "TimeIndex", "Year", "Month", "Day", "Hour", "Minute", "Dst", "EnvironmentPeriodIndex");
                 DataTable dataTable_ReportData = Core.SQLite.Query.DataTable(sQLiteConnection, "ReportData", "ReportDataDictionaryIndex", "TimeIndex", "Value");
 
+
+                result = new List<DesignDay>();
                 foreach(DataRow dataRow in dataTable_EnvironmentPeriods.Rows)
                 {
                     if(!Core.Query.TryConvert(dataRow["EnvironmentName"], out string environmentName))
@@ -34,15 +37,7 @@ namespace SAM.Analytical.OpenStudio
                         continue;
                     }
 
-                    int reportDataDictionaryIndex = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, "Site Total Sky Cover", "Environment");
-                    if(reportDataDictionaryIndex == -1)
-                    {
-                        continue;
-                    }
-                    
-                    SortedDictionary<int, double> reportDataDictionary = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportDataDictionary, reportDataDictionaryIndex);
                     SortedDictionary<int, DateTime> timeIndexDictionary = Core.OpenStudio.Query.TimeIndexDictionary(dataTable_Time, environmentPeriodIndex);
-
                     List<Tuple<int, DateTime>> tuples = new List<Tuple<int, DateTime>>();
                     foreach(KeyValuePair<int, DateTime> keyValuePair in timeIndexDictionary)
                     {
@@ -58,10 +53,28 @@ namespace SAM.Analytical.OpenStudio
 
                     DesignDay designDay = new DesignDay(environmentName, System.Convert.ToInt16(tuples[0].Item2.Year), System.Convert.ToByte(tuples[0].Item2.Month), System.Convert.ToByte(tuples[0].Item2.Day));
 
-                    int index = 0;
-                    foreach(Tuple<int, DateTime> tuple in tuples)
+                    int reportDataDictionaryIndex = -1;
+
+                    List<Tuple<Weather.WeatherDataType, string>> tuples_WeatherDataType = new List<Tuple<Weather.WeatherDataType, string>>();
+                    tuples_WeatherDataType.Add(new Tuple<Weather.WeatherDataType, string>(Weather.WeatherDataType.CloudCover, "Site Total Sky Cover"));
+                    tuples_WeatherDataType.Add(new Tuple<Weather.WeatherDataType, string>(Weather.WeatherDataType.DirectSolarRadiation, "Site Direct Solar Radiation Rate per Area"));
+                    tuples_WeatherDataType.Add(new Tuple<Weather.WeatherDataType, string>(Weather.WeatherDataType.DiffuseSolarRadiation, "Site Diffuse Solar Radiation Rate per Area"));
+                    tuples_WeatherDataType.Add(new Tuple<Weather.WeatherDataType, string>(Weather.WeatherDataType.WindDirection, "Site Wind Direction"));
+                    tuples_WeatherDataType.Add(new Tuple<Weather.WeatherDataType, string>(Weather.WeatherDataType.WindSpeed, "Site Wind Speed"));
+                    tuples_WeatherDataType.Add(new Tuple<Weather.WeatherDataType, string>(Weather.WeatherDataType.RelativeHumidity, "Site Outdoor Air Relative Humidity"));
+                    tuples_WeatherDataType.Add(new Tuple<Weather.WeatherDataType, string>(Weather.WeatherDataType.DryBulbTemperature, "Site Outdoor Air Drybulb Temperature"));
+
+                    foreach(Tuple<Weather.WeatherDataType, string> tuple in tuples_WeatherDataType)
                     {
-                        designDay[Weather.WeatherDataType.CloudCover, index] = reportDataDictionary[tuple.Item1];
+                        reportDataDictionaryIndex = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, tuple.Item2, "Environment");
+                        if (reportDataDictionaryIndex != -1)
+                        {
+                            SortedDictionary<int, double> reportDataDictionary = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex);
+                            for (int j = 0; j < tuples.Count; j++)
+                            {
+                                designDay[tuple.Item1, j] = reportDataDictionary[tuples[j].Item1];
+                            }
+                        }
                     }
 
                     result.Add(designDay);

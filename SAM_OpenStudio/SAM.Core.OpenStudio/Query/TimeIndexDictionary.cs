@@ -125,7 +125,7 @@ namespace SAM.Core.OpenStudio
                     }
                 }
 
-                result[timeIndex] = new DateTime(year, month, day, hour, minute, second);
+                result[timeIndex] = new DateTime(year, month, day, hour - 1, minute, second);
             }
 
             return result;
