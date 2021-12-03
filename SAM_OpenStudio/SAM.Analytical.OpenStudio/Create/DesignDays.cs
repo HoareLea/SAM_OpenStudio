@@ -66,13 +66,19 @@ namespace SAM.Analytical.OpenStudio
 
                     foreach(Tuple<Weather.WeatherDataType, string> tuple in tuples_WeatherDataType)
                     {
+                        double factor = 1;
+                        if(tuple.Item1 == Weather.WeatherDataType.CloudCover)
+                        {
+                            factor = 8;
+                        }
+                        
                         reportDataDictionaryIndex = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, tuple.Item2, "Environment");
                         if (reportDataDictionaryIndex != -1)
                         {
                             SortedDictionary<int, double> reportDataDictionary = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex);
                             for (int j = 0; j < tuples.Count; j++)
                             {
-                                designDay[tuple.Item1, j] = reportDataDictionary[tuples[j].Item1];
+                                designDay[tuple.Item1, j] = reportDataDictionary[tuples[j].Item1] / factor;
                             }
                         }
                     }
