@@ -102,6 +102,7 @@
     <Compile Include="Query\ReportDataDictionary.cs" />
     <Compile Include="Query\EnvironmentPeriodIndex.cs" />
     <Compile Include="Query\ConvertUnit.cs" />
+    <Compile Include="Query\DateTime.cs" />
     <Compile Include="Query\TimeIndexDictionary.cs" />
     <Compile Include="Query\Units.cs" />
     <Compile Include="Query\ReportDataDictionaryIndex.cs" />

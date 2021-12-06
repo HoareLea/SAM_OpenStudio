@@ -379,10 +379,12 @@ namespace SAM.Analytical.OpenStudio
                             }
                             if (reportDataDictionaryIndex_DryBulbTemperture != -1)
                             {
+                                //TODO: Add Filtering by EnviromentPeriod
+
                                 sortedDictionary_DryBulbTemperture = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_DryBulbTemperture);
                                 if (sortedDictionary_DryBulbTemperture != null)
                                 {
-                                    if(sortedDictionary_DryBulbTemperture.ContainsKey(timeIndex))
+                                    if (sortedDictionary_DryBulbTemperture.ContainsKey(timeIndex))
                                     {
                                         double value = sortedDictionary_DryBulbTemperture[timeIndex];
                                         if (!double.IsNaN(value))
@@ -392,31 +394,36 @@ namespace SAM.Analytical.OpenStudio
                                         }
                                     }
 
+
+                                    //TODO: Add Filtering by EnviromentPeriod
                                     Core.OpenStudio.Query.Max(sortedDictionary_DryBulbTemperture, out int timeIndex_Max, out double value_Max);
                                     spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MaxDryBulbTemperature, value_Max);
 
-                                    if (sortedDictionary_TimeIndex != null && sortedDictionary_TimeIndex.ContainsKey(timeIndex_Max))
+                                    DateTime? dateTime_Max = Core.OpenStudio.Query.DateTime(dataTable_Time, timeIndex_Max);
+                                    if (dateTime_Max != null && dateTime_Max.HasValue)
                                     {
-                                        DateTime dateTime = sortedDictionary_TimeIndex[timeIndex_Max];
-                                        spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MaxDryBulbTemperatureIndex, Core.Query.HourOfYear(dateTime));
+                                        spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MaxDryBulbTemperatureIndex, Core.Query.HourOfYear(dateTime_Max.Value));
                                     }
 
+
+                                    //TODO: Add Filtering by EnviromentPeriod
                                     Core.OpenStudio.Query.Min(sortedDictionary_DryBulbTemperture, out int timeIndex_Min, out double value_Min);
                                     spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MinDryBulbTemperature, value_Min);
 
-                                    if (sortedDictionary_TimeIndex != null && sortedDictionary_TimeIndex.ContainsKey(timeIndex_Min))
+                                    DateTime? dateTime_Min = Core.OpenStudio.Query.DateTime(dataTable_Time, timeIndex_Min);
+                                    if (dateTime_Min != null && dateTime_Min.HasValue)
                                     {
-                                        DateTime dateTime = sortedDictionary_TimeIndex[timeIndex_Min];
-                                        spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MaxDryBulbTemperatureIndex, Core.Query.HourOfYear(dateTime));
+                                        spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MinDryBulbTemperatureIndex, Core.Query.HourOfYear(dateTime_Min.Value));
                                     }
                                 }
                             }
 
                             //Load
-                            string name_Load = loadType == LoadType.Cooling ? "Zone Ideal Loads Supply Air Sensible Cooling Rate " : "Zone Ideal Loads Supply Air Sensible Heating Rate";
-                            int reportDataDictionaryIndex_Load = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_Load, spaceSimulationResult.Name);
+                            string name_Load = loadType == LoadType.Cooling ? "Zone Ideal Loads Supply Air Sensible Cooling Rate" : "Zone Ideal Loads Supply Air Sensible Heating Rate";
+                            int reportDataDictionaryIndex_Load = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_Load, spaceSimulationResult.Name, Core.TextComparisonType.StartsWith);
                             if (reportDataDictionaryIndex_Load != -1)
                             {
+                                //TODO: Add Filtering by EnviromentPeriod
                                 SortedDictionary<int, double> sortedDictionary = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_Load);
                                 Core.OpenStudio.Query.Max(sortedDictionary, out int timeIndex_Temp, out double value);
                                 if (double.IsNaN(value))

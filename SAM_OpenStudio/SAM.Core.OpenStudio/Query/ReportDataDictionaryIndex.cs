@@ -4,7 +4,7 @@ namespace SAM.Core.OpenStudio
 {
     public static partial class Query
     {
-        public static int ReportDataDictionaryIndex(this DataTable dataTable, string name, string keyValue)
+        public static int ReportDataDictionaryIndex(this DataTable dataTable, string name, string keyValue, TextComparisonType textComparisonType = TextComparisonType.Equals)
         {
             if(dataTable == null || string.IsNullOrWhiteSpace(name) || string.IsNullOrWhiteSpace(keyValue))
             {
@@ -43,22 +43,22 @@ namespace SAM.Core.OpenStudio
 
             foreach(DataRow dataRow in dataRowCollection)
             {
-                if(!Core.Query.TryConvert(dataRow[index_KeyValue], out string keyValue_Temp))
-                {
-                    continue;
-                }
-
-                if(!keyValue.Equals(keyValue_Temp))
-                {
-                    continue;
-                }
-
                 if (!Core.Query.TryConvert(dataRow[index_Name], out string name_Temp))
                 {
                     continue;
                 }
 
                 if (!name.Equals(name_Temp))
+                {
+                    continue;
+                }
+
+                if (!Core.Query.TryConvert(dataRow[index_KeyValue], out string keyValue_Temp))
+                {
+                    continue;
+                }
+
+                if(!Core.Query.Compare(keyValue_Temp, keyValue, textComparisonType))
                 {
                     continue;
                 }
