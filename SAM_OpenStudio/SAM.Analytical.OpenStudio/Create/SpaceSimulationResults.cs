@@ -235,6 +235,8 @@ namespace SAM.Analytical.OpenStudio
                                 continue;
                             }
 
+                            SortedDictionary<int, DateTime> sortedDictionary_TimeIndex = Core.OpenStudio.Query.TimeIndexDictionary(dataTable_Time, designDayIndex);
+
                             //Infiltration
                             string name_Infiltration = loadType == LoadType.Cooling ? "Zone Infiltration Sensible Heat Gain Energy" : "Zone Infiltration Sensible Heat Loss Energy";
                             int reportDataDictionaryIndex_Infiltration = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_Infiltration, spaceSimulationResult.Name);
@@ -285,19 +287,151 @@ namespace SAM.Analytical.OpenStudio
 
                             }
 
-                            //People Sensible
-                            string name_PeopleSensible = "Zone People Sensible Heating Rate";
-                            int reportDataDictionaryIndex_PeopleSensible = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_PeopleSensible, spaceSimulationResult.Name);
-                            if(reportDataDictionaryIndex_PeopleSensible != -1)
+                            //Equipment Latent
+                            string name_EquipmentLatent= "Zone Electric Equipment Latent Gain Rate";
+                            int reportDataDictionaryIndex_EquipmentLatent = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_EquipmentLatent, spaceSimulationResult.Name);
+                            if (reportDataDictionaryIndex_EquipmentLatent != -1)
                             {
-                                double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_PeopleSensible, timeIndex);
+                                double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_EquipmentLatent, timeIndex);
                                 if (double.IsNaN(value))
                                 {
                                     continue;
                                 }
 
-                                value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_PeopleSensible, spaceSimulationResult.Name, value);
-                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.OccupancySensibleGain, value);
+                                value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_EquipmentLatent, spaceSimulationResult.Name, value);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.EquipmentLatentGain, value);
+                            }
+
+                            //Lighting
+                            string name_Lighting = "Zone Lights Total Heating Rate";
+                            int reportDataDictionaryIndex_Lighting = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_Lighting, spaceSimulationResult.Name);
+                            if (reportDataDictionaryIndex_Lighting != -1)
+                            {
+                                double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_Lighting, timeIndex);
+                                if (double.IsNaN(value))
+                                {
+                                    continue;
+                                }
+
+                                value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_Lighting, spaceSimulationResult.Name, value);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.LightingGain, value);
+                            }
+
+                            //Relative Humidity
+                            string name_RelativeHumidity = "Zone Air Relative Humidity";
+                            int reportDataDictionaryIndex_RelativeHumidity = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_RelativeHumidity, spaceSimulationResult.Name);
+                            if (reportDataDictionaryIndex_RelativeHumidity != -1)
+                            {
+                                double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_RelativeHumidity, timeIndex);
+                                if (double.IsNaN(value))
+                                {
+                                    continue;
+                                }
+
+                                value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_RelativeHumidity, spaceSimulationResult.Name, value);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.RelativeHumidity, value);
+                            }
+
+                            //Humidity Ratio
+                            string name_HumidityRatio = "Zone Mean Air Humidity Ratio";
+                            int reportDataDictionaryIndex_HumidityRatio = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_HumidityRatio, spaceSimulationResult.Name);
+                            if (reportDataDictionaryIndex_HumidityRatio == -1)
+                            {
+                                name_HumidityRatio = "Zone Air Humidity Ratio";
+                                reportDataDictionaryIndex_HumidityRatio = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_HumidityRatio, spaceSimulationResult.Name);
+                            }
+                            if (reportDataDictionaryIndex_HumidityRatio != -1)
+                            {
+                                double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_HumidityRatio, timeIndex);
+                                if (double.IsNaN(value))
+                                {
+                                    continue;
+                                }
+
+                                value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_HumidityRatio, spaceSimulationResult.Name, value);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.HumidityRatio, value);
+                            }
+
+                            //Resultant Temperature
+                            string name_ResultantTemperature = "Zone Operative Temperature";
+                            int reportDataDictionaryIndex_ResultantTemperature = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_ResultantTemperature, spaceSimulationResult.Name);
+                            if (reportDataDictionaryIndex_EquipmentLatent != -1)
+                            {
+                                double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_ResultantTemperature, timeIndex);
+                                if (double.IsNaN(value))
+                                {
+                                    continue;
+                                }
+
+                                value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_EquipmentLatent, spaceSimulationResult.Name, value);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.ResultantTemperature, value);
+                            }
+
+                            SortedDictionary<int, double> sortedDictionary_DryBulbTemperture = null;
+
+                            //Dry Bulb Temperture
+                            string name_DryBulbTemperture = "Zone Mean Air Temperature";
+                            int reportDataDictionaryIndex_DryBulbTemperture = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_DryBulbTemperture, spaceSimulationResult.Name);
+                            if(reportDataDictionaryIndex_DryBulbTemperture == -1)
+                            {
+                                name_DryBulbTemperture = "Zone Air Temperature";
+                                reportDataDictionaryIndex_DryBulbTemperture = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_DryBulbTemperture, spaceSimulationResult.Name);
+                            }
+                            if (reportDataDictionaryIndex_DryBulbTemperture != -1)
+                            {
+                                sortedDictionary_DryBulbTemperture = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_DryBulbTemperture);
+                                if (sortedDictionary_DryBulbTemperture != null)
+                                {
+                                    if(sortedDictionary_DryBulbTemperture.ContainsKey(timeIndex))
+                                    {
+                                        double value = sortedDictionary_DryBulbTemperture[timeIndex];
+                                        if (!double.IsNaN(value))
+                                        {
+                                            value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_DryBulbTemperture, spaceSimulationResult.Name, value);
+                                            spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.DryBulbTempearture, value);
+                                        }
+                                    }
+
+                                    Core.OpenStudio.Query.Max(sortedDictionary_DryBulbTemperture, out int timeIndex_Max, out double value_Max);
+                                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MaxDryBulbTemperature, value_Max);
+
+                                    if (sortedDictionary_TimeIndex != null && sortedDictionary_TimeIndex.ContainsKey(timeIndex_Max))
+                                    {
+                                        DateTime dateTime = sortedDictionary_TimeIndex[timeIndex_Max];
+                                        spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MaxDryBulbTemperatureIndex, Core.Query.HourOfYear(dateTime));
+                                    }
+
+                                    Core.OpenStudio.Query.Min(sortedDictionary_DryBulbTemperture, out int timeIndex_Min, out double value_Min);
+                                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MinDryBulbTemperature, value_Min);
+
+                                    if (sortedDictionary_TimeIndex != null && sortedDictionary_TimeIndex.ContainsKey(timeIndex_Min))
+                                    {
+                                        DateTime dateTime = sortedDictionary_TimeIndex[timeIndex_Min];
+                                        spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MaxDryBulbTemperatureIndex, Core.Query.HourOfYear(dateTime));
+                                    }
+                                }
+                            }
+
+                            //Load
+                            string name_Load = loadType == LoadType.Cooling ? "Zone Ideal Loads Supply Air Sensible Cooling Rate " : "Zone Ideal Loads Supply Air Sensible Heating Rate";
+                            int reportDataDictionaryIndex_Load = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_Load, spaceSimulationResult.Name);
+                            if (reportDataDictionaryIndex_Load != -1)
+                            {
+                                SortedDictionary<int, double> sortedDictionary = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_Load);
+                                Core.OpenStudio.Query.Max(sortedDictionary, out int timeIndex_Temp, out double value);
+                                if (double.IsNaN(value))
+                                {
+                                    continue;
+                                }
+
+                                value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_Load, spaceSimulationResult.Name, value);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.Load, value);
+
+                                if(sortedDictionary_TimeIndex != null && sortedDictionary_TimeIndex.ContainsKey(timeIndex_Temp))
+                                {
+                                    DateTime dateTime = sortedDictionary_TimeIndex[timeIndex_Temp];
+                                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.LoadIndex, Core.Query.HourOfYear(dateTime));
+                                }
                             }
 
                             //People Latent
@@ -315,23 +449,78 @@ namespace SAM.Analytical.OpenStudio
                                 spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.OccupancyLatentGain, value);
                             }
 
-                            //Lighting
-                            string name_Lighting = "Zone Lights Total Heating Rate";
-                            int reportDataDictionaryIndex_Lighting = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_Lighting, spaceSimulationResult.Name);
-                            if (reportDataDictionaryIndex_Lighting != -1)
+                            SortedDictionary<int, double> sortedDictionary_PeopleSensible = null;
+
+                            //People Sensible
+                            string name_PeopleSensible = "Zone People Sensible Heating Rate";
+                            int reportDataDictionaryIndex_PeopleSensible = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_PeopleSensible, spaceSimulationResult.Name);
+                            if (reportDataDictionaryIndex_PeopleSensible != -1)
                             {
-                                double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_Lighting, timeIndex);
-                                if (double.IsNaN(value))
+                                sortedDictionary_PeopleSensible = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_PeopleSensible);
+                                if (sortedDictionary_PeopleSensible != null && sortedDictionary_PeopleSensible.ContainsKey(timeIndex))
                                 {
-                                    continue;
+                                    double value = sortedDictionary_PeopleSensible[timeIndex];
+                                    if (double.IsNaN(value))
+                                    {
+                                        continue;
+                                    }
+
+                                    value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_PeopleSensible, spaceSimulationResult.Name, value);
+                                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.OccupancySensibleGain, value);
+                                }
+                            }
+
+                            //Occupied Hours
+                            if (sortedDictionary_PeopleSensible != null && sortedDictionary_TimeIndex != null)
+                            {
+                                List<Tuple<DateTime, int>> tuples = new List<Tuple<DateTime, int>>();
+                                foreach(KeyValuePair<int, double> keyValuePair in sortedDictionary_PeopleSensible)
+                                {
+                                    if(keyValuePair.Value <= 0)
+                                    {
+                                        continue;
+                                    }
+
+                                    if(!sortedDictionary_TimeIndex.ContainsKey(keyValuePair.Key))
+                                    {
+                                        continue;
+                                    }
+
+                                    DateTime dateTime = sortedDictionary_TimeIndex[keyValuePair.Key];
+                                    dateTime = new DateTime(dateTime.Year, dateTime.Month, dateTime.Day, dateTime.Hour, 0, 0);
+                                    if(tuples.Find(x => x.Item1.Year == dateTime.Year && x.Item1.Month == dateTime.Month && x.Item1.Day == dateTime.Day && x.Item1.Hour == dateTime.Hour) == null)
+                                    {
+                                        tuples.Add(new Tuple<DateTime, int>(dateTime, keyValuePair.Key));
+                                    }
                                 }
 
-                                value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_Lighting, spaceSimulationResult.Name, value);
-                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.LightingGain, value);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.OccupiedHours, tuples.Count);
+
+                                if(sortedDictionary_DryBulbTemperture != null)
+                                {
+                                    List<int> counts = new List<int>() { 0, 0 }; //counts[0] <- 25 //counts[1] <- 28
+                                    foreach (Tuple<DateTime, int> tuple in tuples)
+                                    {
+                                        if(!sortedDictionary_DryBulbTemperture.TryGetValue(tuple.Item2, out double dryBulbTemperature))
+                                        {
+                                            continue;
+                                        }
+
+                                        if(dryBulbTemperature > 25)
+                                        {
+                                            counts[0]++;
+                                        }
+
+                                        if (dryBulbTemperature > 28)
+                                        {
+                                            counts[1]++;
+                                        }
+                                    }
+                                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.OccupiedHours25, counts[0]);
+                                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.OccupiedHours28, counts[1]);
+                                }
                             }
                         }
-
-                        
                     }
 
                 }
