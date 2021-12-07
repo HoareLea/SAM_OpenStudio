@@ -536,6 +536,21 @@ namespace SAM.Analytical.OpenStudio
                                     spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.OccupiedHours28, counts[1]);
                                 }
                             }
+
+                            //Solar Gain
+                            string name_SolarGain = "Zone Windows Total Transmitted Solar Radiation Rate";
+                            int reportDataDictionaryIndex_SolarGain = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_SolarGain, spaceSimulationResult.Name);
+                            if (reportDataDictionaryIndex_SolarGain != -1)
+                            {
+                                double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_SolarGain, timeIndex);
+                                if (double.IsNaN(value))
+                                {
+                                    continue;
+                                }
+
+                                value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_SolarGain, spaceSimulationResult.Name, value);
+                                spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.SolarGain, value);
+                            }
                         }
                     }
 
