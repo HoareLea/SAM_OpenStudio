@@ -437,11 +437,17 @@ namespace SAM.Analytical.OpenStudio
                                 value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_Load, spaceSimulationResult.Name, value);
                                 spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.Load, value);
 
-                                if(sortedDictionary_TimeIndex != null && sortedDictionary_TimeIndex.ContainsKey(timeIndex_Temp))
+                                DateTime? dateTime = Core.OpenStudio.Query.DateTime(dataTable_Time, timeIndex_Temp);
+                                if (dateTime != null && dateTime.HasValue)
                                 {
-                                    DateTime dateTime = sortedDictionary_TimeIndex[timeIndex_Temp];
-                                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.LoadIndex, Core.Query.HourOfYear(dateTime));
+                                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MinDryBulbTemperatureIndex, Core.Query.HourOfYear(dateTime.Value));
                                 }
+
+                                //if (sortedDictionary_TimeIndex != null && sortedDictionary_TimeIndex.ContainsKey(timeIndex_Temp))
+                                //{
+                                //    DateTime dateTime = sortedDictionary_TimeIndex[timeIndex_Temp];
+                                //    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.LoadIndex, Core.Query.HourOfYear(dateTime));
+                                //}
                             }
 
                             //People Latent
