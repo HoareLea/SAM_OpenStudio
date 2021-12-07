@@ -237,6 +237,8 @@ namespace SAM.Analytical.OpenStudio
                                 continue;
                             }
 
+                            spaceSimulationResult.SetValue(SpaceSimulationResultParameter.DesignLoadTimeIndex, timeIndex);
+
                             SortedDictionary<int, DateTime> sortedDictionary_TimeIndex = Core.OpenStudio.Query.TimeIndexDictionary(dataTable_Time, designDayIndex);
 
                             int minTimeIndex = -1;
@@ -405,6 +407,7 @@ namespace SAM.Analytical.OpenStudio
                                     // Max Dry Bulb Temperture
                                     Core.OpenStudio.Query.Max(sortedDictionary_DryBulbTemperture, out int timeIndex_Max, out double value_Max);
                                     spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MaxDryBulbTemperature, value_Max);
+                                    spaceSimulationResult.SetValue(SpaceSimulationResultParameter.MaxDryBulbTemperatureTimeIndex, timeIndex_Max);
 
                                     DateTime? dateTime_Max = Core.OpenStudio.Query.DateTime(dataTable_Time, timeIndex_Max);
                                     if (dateTime_Max != null && dateTime_Max.HasValue)
@@ -415,6 +418,7 @@ namespace SAM.Analytical.OpenStudio
                                     // Min Dry Bulb Temperture
                                     Core.OpenStudio.Query.Min(sortedDictionary_DryBulbTemperture, out int timeIndex_Min, out double value_Min);
                                     spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MinDryBulbTemperature, value_Min);
+                                    spaceSimulationResult.SetValue(SpaceSimulationResultParameter.MinDryBulbTemperatureTimeIndex, timeIndex_Min);
 
                                     DateTime? dateTime_Min = Core.OpenStudio.Query.DateTime(dataTable_Time, timeIndex_Min);
                                     if (dateTime_Min != null && dateTime_Min.HasValue)
@@ -430,16 +434,18 @@ namespace SAM.Analytical.OpenStudio
                             if (reportDataDictionaryIndex_Load != -1)
                             {
                                 SortedDictionary<int, double> sortedDictionary = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_Load, minTimeIndex, maxTimeIndex);
-                                Core.OpenStudio.Query.Max(sortedDictionary, out int timeIndex_Temp, out double value);
+                                Core.OpenStudio.Query.Max(sortedDictionary, out int timeIndex_Load, out double value);
                                 if (double.IsNaN(value))
                                 {
                                     continue;
                                 }
 
+                                spaceSimulationResult.SetValue(SpaceSimulationResultParameter.LoadTimeIndex, timeIndex_Load);
+
                                 value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_Load, spaceSimulationResult.Name, value);
                                 spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.Load, value);
 
-                                DateTime? dateTime = Core.OpenStudio.Query.DateTime(dataTable_Time, timeIndex_Temp);
+                                DateTime? dateTime = Core.OpenStudio.Query.DateTime(dataTable_Time, timeIndex_Load);
                                 if (dateTime != null && dateTime.HasValue)
                                 {
                                     spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.LoadIndex, Core.Query.HourOfYear(dateTime.Value));
