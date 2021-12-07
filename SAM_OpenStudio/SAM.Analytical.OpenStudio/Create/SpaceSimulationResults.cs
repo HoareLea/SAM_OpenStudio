@@ -26,6 +26,8 @@ namespace SAM.Analytical.OpenStudio
                     result = dataTable.ToSAM_SpaceSimulationResult();
                 }
 
+                //DataTable dataTable_Surfaces = Core.SQLite.Query.DataTable(sQLiteConnection, "Surfaces", "SurfaceIndex", "ZoneIndex");
+
                 if(result != null && result.Count != 0)
                 {
                     DataTable dataTable_EnvironmentPeriods = Core.SQLite.Query.DataTable(sQLiteConnection, "EnvironmentPeriods", "EnvironmentPeriodIndex", "EnvironmentName");
@@ -440,7 +442,7 @@ namespace SAM.Analytical.OpenStudio
                                 DateTime? dateTime = Core.OpenStudio.Query.DateTime(dataTable_Time, timeIndex_Temp);
                                 if (dateTime != null && dateTime.HasValue)
                                 {
-                                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MinDryBulbTemperatureIndex, Core.Query.HourOfYear(dateTime.Value));
+                                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.LoadIndex, Core.Query.HourOfYear(dateTime.Value));
                                 }
 
                                 //if (sortedDictionary_TimeIndex != null && sortedDictionary_TimeIndex.ContainsKey(timeIndex_Temp))
