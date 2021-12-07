@@ -26,7 +26,7 @@ namespace SAM.Analytical.OpenStudio
                     result = dataTable.ToSAM_SpaceSimulationResult();
                 }
 
-                //DataTable dataTable_Surfaces = Core.SQLite.Query.DataTable(sQLiteConnection, "Surfaces", "SurfaceIndex", "ZoneIndex");
+                DataTable dataTable_Surfaces = Core.SQLite.Query.DataTable(sQLiteConnection, "Surfaces", "SurfaceIndex", "SurfaceName", "ZoneIndex");
 
                 if(result != null && result.Count != 0)
                 {
@@ -552,6 +552,36 @@ namespace SAM.Analytical.OpenStudio
 
                                 value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_SolarGain, spaceSimulationResult.Name, value);
                                 spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.SolarGain, value);
+                            }
+
+                            //Opaque External Conduction
+                            if (dataTable_Surfaces != null && Core.Query.TryConvert(spaceSimulationResult.Reference, out int zoneIndex))
+                            {
+                                List<string> surfaceNames = Core.OpenStudio.Query.SurfaceNames(dataTable_Surfaces, zoneIndex);
+                                if(surfaceNames != null && surfaceNames.Count != 0)
+                                {
+                                    string name_OpaqueExternalConduction = "Surface Average Face Conduction Heat Transfer Rate";
+
+                                    double value = 0;
+                                    foreach (string surfaceName in surfaceNames)
+                                    {
+                                        int reportDataDictionaryIndex_OpaqueExternalConduction = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_OpaqueExternalConduction, surfaceName);
+                                        if(reportDataDictionaryIndex_OpaqueExternalConduction == -1)
+                                        {
+                                            continue;
+                                        }
+
+                                        double value_Surface = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_OpaqueExternalConduction, timeIndex);
+                                        if (double.IsNaN(value_Surface))
+                                        {
+                                            continue;
+                                        }
+
+                                        value += value_Surface;
+                                    }
+
+                                    spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.OpaqueExternalConduction, value);
+                                }
                             }
                         }
                     }

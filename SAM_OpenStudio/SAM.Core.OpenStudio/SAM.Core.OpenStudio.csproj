@@ -97,6 +97,8 @@
     <Compile Include="Query\AvailableEnviromentPeriodsNames.cs" />
     <Compile Include="Query\AvailableTimeSeriesNames.cs" />
     <Compile Include="Create\Model.cs" />
+    <Compile Include="Query\SurfaceNames.cs" />
+    <Compile Include="Query\SurfaceIndexes.cs" />
     <Compile Include="Query\Min.cs" />
     <Compile Include="Query\ReportData.cs" />
     <Compile Include="Query\ReportDataDictionary.cs" />
