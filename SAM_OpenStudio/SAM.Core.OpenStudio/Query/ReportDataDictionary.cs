@@ -5,7 +5,7 @@ namespace SAM.Core.OpenStudio
 {
     public static partial class Query
     {
-        public static SortedDictionary<int, double> ReportDataDictionary(this DataTable dataTable, int reportDataDictionaryIndex)
+        public static SortedDictionary<int, double> ReportDataDictionary(this DataTable dataTable, int reportDataDictionaryIndex, int minTimeIndex = -1, int maxTimeIndex = -1)
         {
             if(dataTable == null || reportDataDictionaryIndex == -1)
             {
@@ -61,6 +61,16 @@ namespace SAM.Core.OpenStudio
                 }
 
                 if (!Core.Query.TryConvert(dataRow[index_TimeIndex], out int timeIndex_Temp))
+                {
+                    continue;
+                }
+
+                if(minTimeIndex != -1 && timeIndex_Temp < minTimeIndex)
+                {
+                    continue;
+                }
+
+                if (maxTimeIndex != -1 && timeIndex_Temp > maxTimeIndex)
                 {
                     continue;
                 }

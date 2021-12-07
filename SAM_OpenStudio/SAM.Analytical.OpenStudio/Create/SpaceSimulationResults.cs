@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
+using System.Linq;
 
 namespace SAM.Analytical.OpenStudio
 {
@@ -92,7 +93,6 @@ namespace SAM.Analytical.OpenStudio
                             }
                             result = spaceSimulationResults;
                         }
-
                     }
 
                     dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "NominalLighting", "ZoneIndex", "DesignLevel");
@@ -237,6 +237,14 @@ namespace SAM.Analytical.OpenStudio
 
                             SortedDictionary<int, DateTime> sortedDictionary_TimeIndex = Core.OpenStudio.Query.TimeIndexDictionary(dataTable_Time, designDayIndex);
 
+                            int minTimeIndex = -1;
+                            int maxTimeIndex = -1;
+                            if(sortedDictionary_TimeIndex != null)
+                            {
+                                minTimeIndex = sortedDictionary_TimeIndex.Keys.Min();
+                                maxTimeIndex = sortedDictionary_TimeIndex.Keys.Max();
+                            }
+
                             //Infiltration
                             string name_Infiltration = loadType == LoadType.Cooling ? "Zone Infiltration Sensible Heat Gain Energy" : "Zone Infiltration Sensible Heat Loss Energy";
                             int reportDataDictionaryIndex_Infiltration = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_Infiltration, spaceSimulationResult.Name);
@@ -379,9 +387,7 @@ namespace SAM.Analytical.OpenStudio
                             }
                             if (reportDataDictionaryIndex_DryBulbTemperture != -1)
                             {
-                                //TODO: Add Filtering by EnviromentPeriod
-
-                                sortedDictionary_DryBulbTemperture = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_DryBulbTemperture);
+                                sortedDictionary_DryBulbTemperture = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_DryBulbTemperture, minTimeIndex, maxTimeIndex);
                                 if (sortedDictionary_DryBulbTemperture != null)
                                 {
                                     if (sortedDictionary_DryBulbTemperture.ContainsKey(timeIndex))
@@ -394,8 +400,7 @@ namespace SAM.Analytical.OpenStudio
                                         }
                                     }
 
-
-                                    //TODO: Add Filtering by EnviromentPeriod
+                                    // Max Dry Bulb Temperture
                                     Core.OpenStudio.Query.Max(sortedDictionary_DryBulbTemperture, out int timeIndex_Max, out double value_Max);
                                     spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MaxDryBulbTemperature, value_Max);
 
@@ -405,8 +410,7 @@ namespace SAM.Analytical.OpenStudio
                                         spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MaxDryBulbTemperatureIndex, Core.Query.HourOfYear(dateTime_Max.Value));
                                     }
 
-
-                                    //TODO: Add Filtering by EnviromentPeriod
+                                    // Min Dry Bulb Temperture
                                     Core.OpenStudio.Query.Min(sortedDictionary_DryBulbTemperture, out int timeIndex_Min, out double value_Min);
                                     spaceSimulationResult.SetValue(Analytical.SpaceSimulationResultParameter.MinDryBulbTemperature, value_Min);
 
@@ -423,8 +427,7 @@ namespace SAM.Analytical.OpenStudio
                             int reportDataDictionaryIndex_Load = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_Load, spaceSimulationResult.Name, Core.TextComparisonType.StartsWith);
                             if (reportDataDictionaryIndex_Load != -1)
                             {
-                                //TODO: Add Filtering by EnviromentPeriod
-                                SortedDictionary<int, double> sortedDictionary = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_Load);
+                                SortedDictionary<int, double> sortedDictionary = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_Load, minTimeIndex, maxTimeIndex);
                                 Core.OpenStudio.Query.Max(sortedDictionary, out int timeIndex_Temp, out double value);
                                 if (double.IsNaN(value))
                                 {
@@ -463,7 +466,7 @@ namespace SAM.Analytical.OpenStudio
                             int reportDataDictionaryIndex_PeopleSensible = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable, name_PeopleSensible, spaceSimulationResult.Name);
                             if (reportDataDictionaryIndex_PeopleSensible != -1)
                             {
-                                sortedDictionary_PeopleSensible = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_PeopleSensible);
+                                sortedDictionary_PeopleSensible = Core.OpenStudio.Query.ReportDataDictionary(dataTable_ReportData, reportDataDictionaryIndex_PeopleSensible, minTimeIndex, maxTimeIndex);
                                 if (sortedDictionary_PeopleSensible != null && sortedDictionary_PeopleSensible.ContainsKey(timeIndex))
                                 {
                                     double value = sortedDictionary_PeopleSensible[timeIndex];

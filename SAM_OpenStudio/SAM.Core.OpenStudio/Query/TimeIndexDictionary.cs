@@ -6,7 +6,7 @@ namespace SAM.Core.OpenStudio
 {
     public static partial class Query
     {
-        public static SortedDictionary<int, DateTime> TimeIndexDictionary(this DataTable dataTable, int environemntPeriodIndex, short defaultYear = 2017)
+        public static SortedDictionary<int, DateTime> TimeIndexDictionary(this DataTable dataTable, int environemntPeriodIndex, short year = 2017)
         {
             if (dataTable == null || environemntPeriodIndex == -1)
             {
@@ -77,14 +77,14 @@ namespace SAM.Core.OpenStudio
                     continue;
                 }
 
-                if (!Core.Query.TryConvert(dataRow[index_Year], out int year))
+                if (!Core.Query.TryConvert(dataRow[index_Year], out int year_Temp))
                 {
                     continue;
                 }
 
                 if (year == 0)
                 {
-                    year = defaultYear;
+                    year_Temp = year;
                 }
 
                 if (!Core.Query.TryConvert(dataRow[index_Month], out byte month))
