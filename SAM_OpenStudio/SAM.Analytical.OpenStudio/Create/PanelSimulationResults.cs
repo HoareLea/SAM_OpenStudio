@@ -79,7 +79,7 @@ namespace SAM.Analytical.OpenStudio
                                 continue;
                             }
 
-                            if (!Core.Query.TryConvert(dataRow[index_ZoneName], out int zoneName))
+                            if (!Core.Query.TryConvert(dataRow[index_ZoneName], out string zoneName))
                             {
                                 continue;
                             }

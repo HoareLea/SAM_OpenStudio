@@ -17,7 +17,7 @@ namespace SAM.Analytical.OpenStudio
             using (SQLiteConnection sQLiteConnection = Core.SQLite.Create.SQLiteConnection(path))
             {
                 spaceSimulationResults = Create.SpaceSimulationResults(sQLiteConnection);
-                panelSimulationResults = Create.PanelSimulationResults(sQLiteConnection);
+                panelSimulationResults = Create.PanelSimulationResults(sQLiteConnection, spaceSimulationResults);
             }
 
             List<Core.Result> result = new List<Core.Result>();
