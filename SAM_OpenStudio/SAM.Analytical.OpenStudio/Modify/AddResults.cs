@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Data.SQLite;
 
 namespace SAM.Analytical.OpenStudio
 {
@@ -11,55 +12,125 @@ namespace SAM.Analytical.OpenStudio
                 return null;
             }
 
-            List<SpaceSimulationResult> spaceSimulationResults = Create.SpaceSimulationResults(path);
-            if(spaceSimulationResults == null)
+            List<SpaceSimulationResult> spaceSimulationResults = null;
+            List<PanelSimulationResult> panelSimulationResults = null;
+            using (SQLiteConnection sQLiteConnection = Core.SQLite.Create.SQLiteConnection(path))
             {
-                return null;
+                spaceSimulationResults = Create.SpaceSimulationResults(sQLiteConnection);
+                panelSimulationResults = Create.PanelSimulationResults(sQLiteConnection);
             }
 
-            Dictionary<string, Space> dictionary = null;
+            List<Core.Result> result = new List<Core.Result>();
 
             List<Space> spaces = adjacencyCluster.GetSpaces();
-            if(spaces != null)
+            Dictionary<string, Space> dictionary_Space = null;
+
+            if (spaces != null)
             {
-                dictionary = new Dictionary<string, Space>();
-                foreach(Space space in spaces)
+                dictionary_Space = new Dictionary<string, Space>();
+                foreach (Space space in spaces)
                 {
-                    if(space == null)
+                    if (space == null)
                     {
                         continue;
                     }
 
                     string reference = space.Guid.ToString("N").ToUpper();
-                    if(string.IsNullOrWhiteSpace(reference))
+                    if (string.IsNullOrWhiteSpace(reference))
                     {
                         continue;
                     }
 
-                    dictionary[reference] = space;
+                    dictionary_Space[reference] = space;
                 }
             }
 
-            List<Core.Result> result = new List<Core.Result>();
-            foreach(SpaceSimulationResult spaceSimulationResult in spaceSimulationResults)
+            if (spaceSimulationResults != null && dictionary_Space != null)
             {
-                string reference = spaceSimulationResult.Name;
-                Space space = null;
-                if(reference != null && dictionary != null && dictionary.Count != 0)
+                foreach (SpaceSimulationResult spaceSimulationResult in spaceSimulationResults)
                 {
-                    if(!dictionary.TryGetValue(reference, out space))
+                    string reference = spaceSimulationResult.Name;
+                    Space space = null;
+                    if (reference != null && dictionary_Space != null && dictionary_Space.Count != 0)
                     {
-                        space = null;
+                        if (!dictionary_Space.TryGetValue(reference, out space))
+                        {
+                            space = null;
+                        }
+                    }
+
+                    adjacencyCluster.AddObject(spaceSimulationResult);
+                    if (space != null)
+                    {
+                        adjacencyCluster.AddRelation(space, spaceSimulationResult);
+                    }
+
+                    result.Add(spaceSimulationResult);
+                }
+            }
+
+            List<Panel> panels = adjacencyCluster.GetPanels();
+            Dictionary<string, Panel> dictionary_Panel = null;
+
+            if(panels != null)
+            {
+                dictionary_Panel = new Dictionary<string, Panel>();
+                foreach (Panel panel in panels)
+                {
+                    if (panel == null)
+                    {
+                        continue;
+                    }
+
+                    string reference = panel.Guid.ToString("N").ToUpper();
+                    if (string.IsNullOrWhiteSpace(reference))
+                    {
+                        continue;
+                    }
+
+                    dictionary_Panel[reference] = panel;
+                }
+            }
+
+            if (panelSimulationResults != null && dictionary_Panel != null)
+            {
+                foreach (PanelSimulationResult panelSimulationResult in panelSimulationResults)
+                {
+                    string reference = panelSimulationResult.Name;
+                    string[] values = reference.Split(new string[] { "__" }, System.StringSplitOptions.None);
+                    if(values.Length > 1)
+                    {
+                        reference = values[1];
+                    }
+
+                    Panel panel = null;
+                    if (reference != null && dictionary_Panel != null && dictionary_Panel.Count != 0)
+                    {
+                        if (!dictionary_Panel.TryGetValue(reference, out panel))
+                        {
+                            panel = null;
+                        }
+                    }
+
+                    adjacencyCluster.AddObject(panelSimulationResult);
+                    if (panel != null)
+                    {
+                        adjacencyCluster.AddRelation(panel, panelSimulationResult);
+                    }
+
+                    result.Add(panelSimulationResult);
+
+                    if(panelSimulationResult.TryGetValue(PanelSimulationResultParameter.ZoneName, out string reference_Space))
+                    {
+                        if (reference != null && dictionary_Space != null && dictionary_Space.Count != 0)
+                        {
+                            if (dictionary_Space.TryGetValue(reference_Space, out Space space) && space != null)
+                            {
+                                adjacencyCluster.AddRelation(space, panelSimulationResult);
+                            }
+                        }
                     }
                 }
-
-                adjacencyCluster.AddObject(spaceSimulationResult);
-                if(space != null)
-                {
-                    adjacencyCluster.AddRelation(space, spaceSimulationResult);
-                }
-
-                result.Add(spaceSimulationResult);
             }
 
             return result;

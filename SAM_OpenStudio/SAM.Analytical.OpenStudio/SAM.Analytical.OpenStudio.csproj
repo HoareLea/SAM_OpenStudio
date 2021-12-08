@@ -94,9 +94,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Convert\ToSAM\PanelSimulationResults.cs" />
     <Compile Include="Convert\ToSAM\SpaceSimulationResults.cs" />
     <Compile Include="Create\DesignDays.cs" />
+    <Compile Include="Create\PanelSimulationResults.cs" />
     <Compile Include="Create\SpaceSimulationResults.cs" />
+    <Compile Include="Enums\Parameter\PanelSimulationResultParameter.cs" />
     <Compile Include="Enums\Parameter\SpaceSimulationResultParameter.cs" />
     <Compile Include="Modify\AddResults.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
