@@ -98,8 +98,8 @@ namespace SAM.Analytical.OpenStudio
                 DataTable dataTable_ReportDataDictionary = Core.SQLite.Query.DataTable(sQLiteConnection, "ReportDataDictionary", "ReportDataDictionaryIndex", "KeyValue", "Name", "Units");
                 DataTable dataTable_ReportData = Core.SQLite.Query.DataTable(sQLiteConnection, "ReportData", "ReportDataDictionaryIndex", "TimeIndex", "Value");
 
-                string name_InsideConductionHeatLoss = "Surface Inside Face Conduction Heat Loss Rate";
-                string name_OutsideConductionHeatLoss = "Surface Outside Face Conduction Heat Loss Rate";
+                string name_InsideConductionHeatTransfer = "Surface Inside Face Conduction Heat Transfer Rate";
+                string name_OutsideConductionHeatTransfer = "Surface Outside Face Conduction Heat Transfer Rate";
 
                 foreach (SpaceSimulationResult spaceSimulationResult in spaceSimulationResults)
                 {
@@ -116,32 +116,32 @@ namespace SAM.Analytical.OpenStudio
 
                     foreach (PanelSimulationResult panelSimulationResult in panelSimulationResults_Space)
                     {
-                        int reportDataDictionaryIndex_InsideConductionHeatLoss = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, name_InsideConductionHeatLoss, panelSimulationResult.Name);
-                        if (reportDataDictionaryIndex_InsideConductionHeatLoss != -1)
+                        int reportDataDictionaryIndex_InsideConductionHeatTransfer = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, name_InsideConductionHeatTransfer, panelSimulationResult.Name);
+                        if (reportDataDictionaryIndex_InsideConductionHeatTransfer != -1)
                         {
-                            double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_InsideConductionHeatLoss, loadTimeIndex);
+                            double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_InsideConductionHeatTransfer, loadTimeIndex);
                             if (double.IsNaN(value))
                             {
                                 continue;
                             }
 
-                            value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_InsideConductionHeatLoss, spaceSimulationResult.Name, value);
+                            value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_InsideConductionHeatTransfer, spaceSimulationResult.Name, value);
 
-                            panelSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.InsideConductionHeatLoss, value);
+                            panelSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.InsideConductionHeatTransfer, value);
                         }
 
-                        int reportDataDictionaryIndex_OutsideConductionHeatLoss = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, name_OutsideConductionHeatLoss, panelSimulationResult.Name);
-                        if (reportDataDictionaryIndex_OutsideConductionHeatLoss != -1)
+                        int reportDataDictionaryIndex_OutsideConductionHeatTransfer = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, name_OutsideConductionHeatTransfer, panelSimulationResult.Name);
+                        if (reportDataDictionaryIndex_OutsideConductionHeatTransfer != -1)
                         {
-                            double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_OutsideConductionHeatLoss, loadTimeIndex);
+                            double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_OutsideConductionHeatTransfer, loadTimeIndex);
                             if (double.IsNaN(value))
                             {
                                 continue;
                             }
 
-                            value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_OutsideConductionHeatLoss, spaceSimulationResult.Name, value);
+                            value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_OutsideConductionHeatTransfer, spaceSimulationResult.Name, value);
 
-                            panelSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.OutsideConductionHeatLoss, value);
+                            panelSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.OutsideConductionHeatTransfer, value);
                         }
                     }
                 }
