@@ -28,13 +28,15 @@ namespace SAM.Analytical.OpenStudio
                         continue;
                     }
                 }
-
-                if(panelSimulationResult.TryGetValue(PanelSimulationResultParameter.ZoneName, out string zoneName) && !string.IsNullOrEmpty(zoneName))
+                else
                 {
-                    if(zoneName.Equals(zoneName))
+                    if (panelSimulationResult.TryGetValue(PanelSimulationResultParameter.ZoneName, out string zoneName) && !string.IsNullOrEmpty(zoneName))
                     {
-                        result.Add(panelSimulationResult);
-                        continue;
+                        if (zoneName.Equals(spaceSimulationResult.Name))
+                        {
+                            result.Add(panelSimulationResult);
+                            continue;
+                        }
                     }
                 }
             }
