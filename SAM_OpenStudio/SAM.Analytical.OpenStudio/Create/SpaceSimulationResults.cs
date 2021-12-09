@@ -581,7 +581,8 @@ namespace SAM.Analytical.OpenStudio
                             List<string> surfaceNames = Core.OpenStudio.Query.SurfaceNames(dataTable_Surfaces, zoneIndex);
                             if (surfaceNames != null && surfaceNames.Count != 0)
                             {
-                                string name_OpaqueExternalConduction = "Surface Average Face Conduction Heat Transfer Rate";
+                                //string name_OpaqueExternalConduction = "Surface Average Face Conduction Heat Transfer Rate";
+                                string name_OpaqueExternalConduction = "Surface Inside Face Conduction Heat Transfer Rate";
 
                                 double value = 0;
                                 foreach (string surfaceName in surfaceNames)
