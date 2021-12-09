@@ -143,7 +143,7 @@ namespace SAM.Analytical.OpenStudio
 
                             value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_InsideConductionHeatTransfer, spaceSimulationResult.Name, value);
 
-                            panelSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.InsideConductionHeatTransfer, value);
+                            panelSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.InternalConduction, value);
                         }
 
                         int reportDataDictionaryIndex_OutsideConductionHeatTransfer = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, name_OutsideConductionHeatTransfer, panelSimulationResult.Name);
@@ -157,7 +157,7 @@ namespace SAM.Analytical.OpenStudio
 
                             value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_OutsideConductionHeatTransfer, spaceSimulationResult.Name, value);
 
-                            panelSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.OutsideConductionHeatTransfer, value);
+                            panelSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.ExternalConduction, value);
                         }
 
                         result_Temp.Add(panelSimulationResult);
