@@ -68,7 +68,7 @@ namespace SAM.Analytical.OpenStudio
                         double factor = 1;
                         if(tuple.Item1 == Weather.WeatherDataType.CloudCover)
                         {
-                            factor = 8;
+                            factor = 10;
                         }
                         
                         reportDataDictionaryIndex = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, tuple.Item2, "Environment");
