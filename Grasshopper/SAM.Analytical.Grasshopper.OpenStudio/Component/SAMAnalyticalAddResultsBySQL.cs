@@ -15,7 +15,7 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         /// <summary>
         /// The latest version of this component
         /// </summary>
-        public override string LatestComponentVersion => "1.0.2";
+        public override string LatestComponentVersion => "1.0.3";
 
         /// <summary>
         /// Provides an Icon for the component.
@@ -39,6 +39,7 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         {
             inputParamManager.AddParameter(new GooAnalyticalObjectParam(), "_analytical", "_analytical", "SAM Analytical Object such as AdjacencyCluster or AnalyticalModel", GH_ParamAccess.item);
             inputParamManager.AddTextParameter("_sQLPath", "_sQLPath", "SQL File Path", GH_ParamAccess.item);
+            inputParamManager.AddBooleanParameter("_run", "_run", "Run", GH_ParamAccess.item, false);
         }
 
         /// <summary>
@@ -49,6 +50,7 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
             outputParamManager.AddParameter(new GooAnalyticalObjectParam(), "analytical", "analytical", "SAM Analytical Object such as AdjacencyCluster or AnalyticalModel", GH_ParamAccess.item);
             outputParamManager.AddParameter(new GooResultParam(), "spaceSimulationResults", "spaceSimulationResults", "SAM Analytical SpaceSimulationResults", GH_ParamAccess.list);
             outputParamManager.AddParameter(new GooResultParam(), "panelSimulationResults", "panelSimulationResults", "SAM Analytical PanelSimulationResults", GH_ParamAccess.list);
+            outputParamManager.AddBooleanParameter("Successful", "Successful", "Correctly saved?", GH_ParamAccess.item);
         }
 
         /// <summary>
@@ -57,6 +59,12 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         /// <param name="dataAccess">The DA object is used to retrieve from inputs and store in outputs.</param>
         protected override void SolveInstance(IGH_DataAccess dataAccess)
         {
+            dataAccess.SetData(3, false);
+
+            bool run = false;
+            if (!dataAccess.GetData(2, ref run) || !run)
+                return;
+
             IAnalyticalObject analyticalObject = null;
             if (!dataAccess.GetData(0, ref analyticalObject) || analyticalObject == null)
             {
@@ -65,37 +73,37 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
             }
 
             string path = null;
-            if (!dataAccess.GetData(1, ref path) || path == null)
-            {
-                AddRuntimeMessage(GH_RuntimeMessageLevel.Error, "Invalid data");
-                return;
-            }
+            dataAccess.GetData(1, ref path);
 
             List<Core.Result> results = null;
 
-            if(analyticalObject is AdjacencyCluster)
+            if(!string.IsNullOrWhiteSpace(path) && System.IO.File.Exists(path))
             {
-                AdjacencyCluster adjacencyCluster = new AdjacencyCluster((AdjacencyCluster)analyticalObject);
-                results = Analytical.OpenStudio.Modify.AddResults(adjacencyCluster, path);
-                analyticalObject = adjacencyCluster;
-            }
-            else if(analyticalObject is AnalyticalModel)
-            {
-                AdjacencyCluster adjacencyCluster = ((AnalyticalModel)analyticalObject).AdjacencyCluster;
-                results = Analytical.OpenStudio.Modify.AddResults(adjacencyCluster, path);
-                analyticalObject = new AnalyticalModel((AnalyticalModel)analyticalObject, adjacencyCluster);
+                if (analyticalObject is AdjacencyCluster)
+                {
+                    AdjacencyCluster adjacencyCluster = new AdjacencyCluster((AdjacencyCluster)analyticalObject);
+                    results = Analytical.OpenStudio.Modify.AddResults(adjacencyCluster, path);
+                    analyticalObject = adjacencyCluster;
+                }
+                else if (analyticalObject is AnalyticalModel)
+                {
+                    AdjacencyCluster adjacencyCluster = ((AnalyticalModel)analyticalObject).AdjacencyCluster;
+                    results = Analytical.OpenStudio.Modify.AddResults(adjacencyCluster, path);
+                    analyticalObject = new AnalyticalModel((AnalyticalModel)analyticalObject, adjacencyCluster);
 
-            }
-            else if(analyticalObject is BuildingModel)
-            {
-                BuildingModel buildingModel = new BuildingModel((BuildingModel)analyticalObject);
-                results = Analytical.OpenStudio.Modify.AddResults(buildingModel, path);
-                analyticalObject = buildingModel;
+                }
+                else if (analyticalObject is BuildingModel)
+                {
+                    BuildingModel buildingModel = new BuildingModel((BuildingModel)analyticalObject);
+                    results = Analytical.OpenStudio.Modify.AddResults(buildingModel, path);
+                    analyticalObject = buildingModel;
+                }
             }
 
             dataAccess.SetData(0, analyticalObject);
             dataAccess.SetDataList(1, results?.FindAll(x => x is SpaceSimulationResult).ConvertAll(x => new GooResult(x)));
             dataAccess.SetDataList(2, results?.FindAll(x => x is PanelSimulationResult).ConvertAll(x => new GooResult(x)));
+            dataAccess.SetData(3, results != null && results.Count != 0);
         }
     }
 }
