@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace SAM.Analytical.Grasshopper.OpenStudio
 {
-    public class SAMAnalyticalDesignDaysBySQL : GH_SAMComponent
+    public class OpenStudioCreateDesignDaysBySQL : GH_SAMComponent
     {
         /// <summary>
         /// Gets the unique ID for this component. Do not change this ID after release.
@@ -25,8 +25,8 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         /// <summary>
         /// Initializes a new instance of the SAMGeometryByGHGeometry class.
         /// </summary>
-        public SAMAnalyticalDesignDaysBySQL()
-          : base("SAMAnalytical.DesignDaysBySQL", "SAMAnalytical.DesignDaysBySQL",
+        public OpenStudioCreateDesignDaysBySQL()
+          : base("OpenStudio.CreateDesignDaysBySQL", "OpenStudio.CreateDesignDaysBySQL",
               "Query DesignDays From OpenStudio Sql Database",
               "SAM", "OpenStudio")
         {

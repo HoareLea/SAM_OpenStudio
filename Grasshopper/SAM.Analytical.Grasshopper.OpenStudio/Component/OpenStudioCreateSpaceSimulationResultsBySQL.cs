@@ -4,7 +4,7 @@ using System;
 
 namespace SAM.Analytical.Grasshopper.OpenStudio
 {
-    public class SAMAnalyticalSpaceSimulationResultsBySQL : GH_SAMComponent
+    public class OpenStudioCreateSpaceSimulationResultsBySQL : GH_SAMComponent
     {
         /// <summary>
         /// Gets the unique ID for this component. Do not change this ID after release.
@@ -24,10 +24,10 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         /// <summary>
         /// Initializes a new instance of the SAMGeometryByGHGeometry class.
         /// </summary>
-        public SAMAnalyticalSpaceSimulationResultsBySQL()
-          : base("SAMAnalytical.SpaceSimulationResultsBySQL", "SAMAnalytical.SpaceSimulationResultsBySQL",
+        public OpenStudioCreateSpaceSimulationResultsBySQL()
+          : base("OpenStudio.CreateSpaceSimulationResultsBySQL", "OpenStudio.CreateSpaceSimulationResultsBySQL",
               "Converts OpenStudio Sql Database to SpaceSymulationResults",
-              "SAM", "OpenStudio")
+              "SAM WIP", "OpenStudio")
         {
         }
 
