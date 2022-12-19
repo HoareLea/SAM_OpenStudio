@@ -124,10 +124,10 @@
       <Version>13.0.2</Version>
     </PackageReference>
     <PackageReference Include="OpenStudio">
-      <Version>3.5.0</Version>
+      <Version>3.2.1</Version>
     </PackageReference>
     <PackageReference Include="System.Data.SQLite.Core">
-      <Version>1.0.117</Version>
+      <Version>1.0.115.5</Version>
     </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
