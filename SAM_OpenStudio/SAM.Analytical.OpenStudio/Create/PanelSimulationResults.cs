@@ -6,23 +6,23 @@ namespace SAM.Analytical.OpenStudio
 {
     public static partial class Create
     {
-        public static List<PanelSimulationResult> PanelSimulationResults(this string path, IEnumerable<SpaceSimulationResult> spaceSimulationResults = null)
+        public static List<SurfaceSimulationResult> SurfaceSimulationResults(this string path, IEnumerable<SpaceSimulationResult> spaceSimulationResults = null)
         {
             if (string.IsNullOrWhiteSpace(path) || !System.IO.File.Exists(path))
             {
                 return null;
             }
 
-            List<PanelSimulationResult> result = null;
+            List<SurfaceSimulationResult> result = null;
             using (SQLiteConnection sQLiteConnection = Core.SQLite.Create.SQLiteConnection(path))
             {
-                result = PanelSimulationResults(sQLiteConnection, spaceSimulationResults);
+                result = SurfaceSimulationResults(sQLiteConnection, spaceSimulationResults);
             }
 
             return result;
         }
 
-        public static List<PanelSimulationResult> PanelSimulationResults(this SQLiteConnection sQLiteConnection, IEnumerable<SpaceSimulationResult> spaceSimulationResults = null)
+        public static List<SurfaceSimulationResult> SurfaceSimulationResults(this SQLiteConnection sQLiteConnection, IEnumerable<SpaceSimulationResult> spaceSimulationResults = null)
         {
             if(sQLiteConnection == null)
             {
@@ -31,12 +31,12 @@ namespace SAM.Analytical.OpenStudio
 
             DataTable dataTable = null;
 
-            List<PanelSimulationResult> result = null;
+            List<SurfaceSimulationResult> result = null;
 
             dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "Surfaces", "SurfaceIndex", "SurfaceName", "Area", "ZoneIndex");
             if (dataTable != null)
             {
-                result = dataTable.ToSAM_PanelSimulationResult();
+                result = dataTable.ToSAM_SurfaceSimulationResult();
             }
 
             dataTable = Core.SQLite.Query.DataTable(sQLiteConnection, "Zones", "ZoneIndex", "ZoneName");
@@ -49,21 +49,21 @@ namespace SAM.Analytical.OpenStudio
                     DataRowCollection dataRowCollection = dataTable.Rows;
                     if(dataRowCollection != null)
                     {
-                        Dictionary<int, List<PanelSimulationResult>> dictionary = new Dictionary<int, List<PanelSimulationResult>>();
-                        foreach(PanelSimulationResult panelSimulationResult in result)
+                        Dictionary<int, List<SurfaceSimulationResult>> dictionary = new Dictionary<int, List<SurfaceSimulationResult>>();
+                        foreach(SurfaceSimulationResult surfaceSimulationResult in result)
                         {
-                            if(!panelSimulationResult.TryGetValue(PanelSimulationResultParameter.ZoneIndex, out int zoneIndex))
+                            if(!surfaceSimulationResult.TryGetValue(SurfaceSimulationResultParameter.ZoneIndex, out int zoneIndex))
                             {
                                 continue;
                             }
 
-                            if(!dictionary.TryGetValue(zoneIndex, out List<PanelSimulationResult> panelSimulationResults))
+                            if(!dictionary.TryGetValue(zoneIndex, out List<SurfaceSimulationResult> surfaceSimulationResults))
                             {
-                                panelSimulationResults = new List<PanelSimulationResult>();
-                                dictionary[zoneIndex] = panelSimulationResults;
+                                surfaceSimulationResults = new List<SurfaceSimulationResult>();
+                                dictionary[zoneIndex] = surfaceSimulationResults;
                             }
 
-                            panelSimulationResults.Add(panelSimulationResult);
+                            surfaceSimulationResults.Add(surfaceSimulationResult);
                         }
 
 
@@ -74,7 +74,7 @@ namespace SAM.Analytical.OpenStudio
                                 continue;
                             }
 
-                            if(!dictionary.TryGetValue(zoneIndex, out List<PanelSimulationResult> panelSimulationResults))
+                            if(!dictionary.TryGetValue(zoneIndex, out List<SurfaceSimulationResult> surfaceSimulationResults))
                             {
                                 continue;
                             }
@@ -84,9 +84,9 @@ namespace SAM.Analytical.OpenStudio
                                 continue;
                             }
 
-                            foreach (PanelSimulationResult panelSimulationResult in panelSimulationResults)
+                            foreach (SurfaceSimulationResult panelSimulationResult in surfaceSimulationResults)
                             {
-                                panelSimulationResult.SetValue(PanelSimulationResultParameter.ZoneName, zoneName);
+                                panelSimulationResult.SetValue(SurfaceSimulationResultParameter.ZoneName, zoneName);
                             }
                         }
                     }
@@ -101,7 +101,7 @@ namespace SAM.Analytical.OpenStudio
                 string name_InsideConductionHeatTransfer = "Surface Inside Face Conduction Heat Transfer Rate";
                 string name_OutsideConductionHeatTransfer = "Surface Outside Face Conduction Heat Transfer Rate";
 
-                List<PanelSimulationResult> result_Temp = new List<PanelSimulationResult>();
+                List<SurfaceSimulationResult> result_Temp = new List<SurfaceSimulationResult>();
                 foreach (SpaceSimulationResult spaceSimulationResult in spaceSimulationResults)
                 {
                     if(!spaceSimulationResult.TryGetValue(SpaceSimulationResultParameter.LoadTimeIndex, out int loadTimeIndex))
@@ -109,30 +109,30 @@ namespace SAM.Analytical.OpenStudio
                         continue;
                     }
 
-                    List<PanelSimulationResult> panelSimulationResults_Space = result.PanelSimulationResults(spaceSimulationResult);
-                    if(panelSimulationResults_Space == null || panelSimulationResults_Space.Count == 0)
+                    List<SurfaceSimulationResult> surfaceSimulationResults_Space = result.SurfaceSimulationResults(spaceSimulationResult);
+                    if(surfaceSimulationResults_Space == null || surfaceSimulationResults_Space.Count == 0)
                     {
                         continue;
                     }
 
                     LoadType loadType = spaceSimulationResult.LoadType();
 
-                    for (int i =0; i < panelSimulationResults_Space.Count; i++)
+                    for (int i =0; i < surfaceSimulationResults_Space.Count; i++)
                     {
-                        PanelSimulationResult panelSimulationResult = panelSimulationResults_Space[i];
-                        if(panelSimulationResult == null)
+                        SurfaceSimulationResult surfaceSimulationResult = surfaceSimulationResults_Space[i];
+                        if(surfaceSimulationResult == null)
                         {
                             continue;
                         }
 
-                        panelSimulationResult = new PanelSimulationResult(System.Guid.NewGuid(), panelSimulationResult);
+                        surfaceSimulationResult = new SurfaceSimulationResult(System.Guid.NewGuid(), surfaceSimulationResult);
                         
                         if(loadType != LoadType.Undefined)
                         {
-                            panelSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.LoadType, spaceSimulationResult.LoadType());
+                            surfaceSimulationResult.SetValue(Analytical.SurfaceSimulationResultParameter.LoadType, spaceSimulationResult.LoadType());
                         }
 
-                        int reportDataDictionaryIndex_InsideConductionHeatTransfer = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, name_InsideConductionHeatTransfer, panelSimulationResult.Name);
+                        int reportDataDictionaryIndex_InsideConductionHeatTransfer = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, name_InsideConductionHeatTransfer, surfaceSimulationResult.Name);
                         if (reportDataDictionaryIndex_InsideConductionHeatTransfer != -1)
                         {
                             double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_InsideConductionHeatTransfer, loadTimeIndex);
@@ -143,10 +143,10 @@ namespace SAM.Analytical.OpenStudio
 
                             value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_InsideConductionHeatTransfer, spaceSimulationResult.Name, value);
 
-                            panelSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.InternalConduction, value);
+                            surfaceSimulationResult.SetValue(Analytical.SurfaceSimulationResultParameter.InternalConduction, value);
                         }
 
-                        int reportDataDictionaryIndex_OutsideConductionHeatTransfer = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, name_OutsideConductionHeatTransfer, panelSimulationResult.Name);
+                        int reportDataDictionaryIndex_OutsideConductionHeatTransfer = Core.OpenStudio.Query.ReportDataDictionaryIndex(dataTable_ReportDataDictionary, name_OutsideConductionHeatTransfer, surfaceSimulationResult.Name);
                         if (reportDataDictionaryIndex_OutsideConductionHeatTransfer != -1)
                         {
                             double value = Core.OpenStudio.Query.ReportData(dataTable_ReportData, reportDataDictionaryIndex_OutsideConductionHeatTransfer, loadTimeIndex);
@@ -157,10 +157,10 @@ namespace SAM.Analytical.OpenStudio
 
                             value = Core.OpenStudio.Query.ConvertUnit(dataTable, name_OutsideConductionHeatTransfer, spaceSimulationResult.Name, value);
 
-                            panelSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.ExternalConduction, value);
+                            surfaceSimulationResult.SetValue(Analytical.SurfaceSimulationResultParameter.ExternalConduction, value);
                         }
 
-                        result_Temp.Add(panelSimulationResult);
+                        result_Temp.Add(surfaceSimulationResult);
                     }
                 }
 

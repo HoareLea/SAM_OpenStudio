@@ -102,7 +102,7 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
 
             dataAccess.SetData(0, analyticalObject);
             dataAccess.SetDataList(1, results?.FindAll(x => x is SpaceSimulationResult).ConvertAll(x => new GooResult(x)));
-            dataAccess.SetDataList(2, results?.FindAll(x => x is PanelSimulationResult).ConvertAll(x => new GooResult(x)));
+            dataAccess.SetDataList(2, results?.FindAll(x => x is SurfaceSimulationResult).ConvertAll(x => new GooResult(x)));
             dataAccess.SetData(3, results != null && results.Count != 0);
         }
     }

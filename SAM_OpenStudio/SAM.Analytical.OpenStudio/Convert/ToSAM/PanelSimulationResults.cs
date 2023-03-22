@@ -5,7 +5,7 @@ namespace SAM.Analytical.OpenStudio
 {
     public static partial class Convert
     {
-        public static List<PanelSimulationResult> ToSAM_PanelSimulationResult(this DataTable dataTable)
+        public static List<SurfaceSimulationResult> ToSAM_SurfaceSimulationResult(this DataTable dataTable)
         {
             DataRowCollection dataRowCollection = dataTable?.Rows;
             if (dataRowCollection == null)
@@ -36,7 +36,7 @@ namespace SAM.Analytical.OpenStudio
 
             string source = Query.Source();
 
-            List<PanelSimulationResult> result = new List<PanelSimulationResult>();
+            List<SurfaceSimulationResult> result = new List<SurfaceSimulationResult>();
             foreach (DataRow dataRow in dataRowCollection)
             {
                 if(dataRow == null)
@@ -56,19 +56,19 @@ namespace SAM.Analytical.OpenStudio
                     continue;
                 }
 
-                PanelSimulationResult spaceSimulationResult = new PanelSimulationResult(surfaceName, source, surfaceIndex.ToString());
+                SurfaceSimulationResult surfaceSimulationResult = new SurfaceSimulationResult(surfaceName, source, surfaceIndex.ToString());
                 
                 if(index_Area != -1 && Core.Query.TryConvert(values[index_Area], out double area))
                 {
-                    spaceSimulationResult.SetValue(Analytical.PanelSimulationResultParameter.Area, area);
+                    surfaceSimulationResult.SetValue(Analytical.SurfaceSimulationResultParameter.Area, area);
                 }
 
                 if (index_ZoneIndex != -1 && Core.Query.TryConvert(values[index_ZoneIndex], out int zoneIndex))
                 {
-                    spaceSimulationResult.SetValue(PanelSimulationResultParameter.ZoneIndex, zoneIndex);
+                    surfaceSimulationResult.SetValue(SurfaceSimulationResultParameter.ZoneIndex, zoneIndex);
                 }
 
-                result.Add(spaceSimulationResult);
+                result.Add(surfaceSimulationResult);
             }
 
             return result;

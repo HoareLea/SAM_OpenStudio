@@ -13,11 +13,11 @@ namespace SAM.Analytical.OpenStudio
             }
 
             List<SpaceSimulationResult> spaceSimulationResults = null;
-            List<PanelSimulationResult> panelSimulationResults = null;
+            List<SurfaceSimulationResult> surfaceSimulationResults = null;
             using (SQLiteConnection sQLiteConnection = Core.SQLite.Create.SQLiteConnection(path))
             {
                 spaceSimulationResults = Create.SpaceSimulationResults(sQLiteConnection);
-                panelSimulationResults = Create.PanelSimulationResults(sQLiteConnection, spaceSimulationResults);
+                surfaceSimulationResults = Create.SurfaceSimulationResults(sQLiteConnection, spaceSimulationResults);
             }
 
             List<Core.Result> result = new List<Core.Result>();
@@ -92,11 +92,11 @@ namespace SAM.Analytical.OpenStudio
                 }
             }
 
-            if (panelSimulationResults != null && dictionary_Panel != null)
+            if (surfaceSimulationResults != null && dictionary_Panel != null)
             {
-                foreach (PanelSimulationResult panelSimulationResult in panelSimulationResults)
+                foreach (SurfaceSimulationResult surfaceSimulationResult in surfaceSimulationResults)
                 {
-                    string reference = panelSimulationResult.Name;
+                    string reference = surfaceSimulationResult.Name;
                     string[] values = reference.Split(new string[] { "__" }, System.StringSplitOptions.None);
                     if(values.Length > 1)
                     {
@@ -112,21 +112,21 @@ namespace SAM.Analytical.OpenStudio
                         }
                     }
 
-                    adjacencyCluster.AddObject(panelSimulationResult);
+                    adjacencyCluster.AddObject(surfaceSimulationResult);
                     if (panel != null)
                     {
-                        adjacencyCluster.AddRelation(panel, panelSimulationResult);
+                        adjacencyCluster.AddRelation(panel, surfaceSimulationResult);
                     }
 
-                    result.Add(panelSimulationResult);
+                    result.Add(surfaceSimulationResult);
 
-                    if(panelSimulationResult.TryGetValue(PanelSimulationResultParameter.ZoneName, out string reference_Space))
+                    if(surfaceSimulationResult.TryGetValue(SurfaceSimulationResultParameter.ZoneName, out string reference_Space))
                     {
                         if (reference != null && dictionary_Space != null && dictionary_Space.Count != 0)
                         {
                             if (dictionary_Space.TryGetValue(reference_Space, out Space space) && space != null)
                             {
-                                adjacencyCluster.AddRelation(space, panelSimulationResult);
+                                adjacencyCluster.AddRelation(space, surfaceSimulationResult);
                             }
                         }
                     }

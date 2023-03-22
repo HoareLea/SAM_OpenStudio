@@ -5,9 +5,9 @@ namespace SAM.Analytical.OpenStudio
 {
     public static partial class Query
     {
-        public static List<PanelSimulationResult> PanelSimulationResults(this IEnumerable<PanelSimulationResult> panelSimulationResults, SpaceSimulationResult spaceSimulationResult)
+        public static List<SurfaceSimulationResult> SurfaceSimulationResults(this IEnumerable<SurfaceSimulationResult> surfaceSimulationResults, SpaceSimulationResult spaceSimulationResult)
         {
-            if(panelSimulationResults == null || spaceSimulationResult == null)
+            if(surfaceSimulationResults == null || spaceSimulationResult == null)
             {
                 return null;
             }
@@ -17,24 +17,24 @@ namespace SAM.Analytical.OpenStudio
                 zoneIndex = -1;
             }
 
-            List<PanelSimulationResult> result = new List<PanelSimulationResult>();
-            foreach(PanelSimulationResult panelSimulationResult in panelSimulationResults)
+            List<SurfaceSimulationResult> result = new List<SurfaceSimulationResult>();
+            foreach(SurfaceSimulationResult surfaceSimulationResult in surfaceSimulationResults)
             {
-                if(zoneIndex != -1 && panelSimulationResult.TryGetValue(PanelSimulationResultParameter.ZoneIndex, out int zoneIndex_Temp) && zoneIndex_Temp != -1)
+                if(zoneIndex != -1 && surfaceSimulationResult.TryGetValue(SurfaceSimulationResultParameter.ZoneIndex, out int zoneIndex_Temp) && zoneIndex_Temp != -1)
                 {
                     if (zoneIndex_Temp == zoneIndex)
                     {
-                        result.Add(panelSimulationResult);
+                        result.Add(surfaceSimulationResult);
                         continue;
                     }
                 }
                 else
                 {
-                    if (panelSimulationResult.TryGetValue(PanelSimulationResultParameter.ZoneName, out string zoneName) && !string.IsNullOrEmpty(zoneName))
+                    if (surfaceSimulationResult.TryGetValue(SurfaceSimulationResultParameter.ZoneName, out string zoneName) && !string.IsNullOrEmpty(zoneName))
                     {
                         if (zoneName.Equals(spaceSimulationResult.Name))
                         {
-                            result.Add(panelSimulationResult);
+                            result.Add(surfaceSimulationResult);
                             continue;
                         }
                     }
