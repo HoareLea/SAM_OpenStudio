@@ -80,6 +80,9 @@
     <Reference Include="SAM.Core.SQLite">
       <HintPath>..\..\..\SAM_SQLite\build\SAM.Core.SQLite.dll</HintPath>
     </Reference>
+    <Reference Include="SAM.Geometry">
+      <HintPath>..\..\..\SAM\build\SAM.Geometry.dll</HintPath>
+    </Reference>
     <Reference Include="SAM.Weather">
       <HintPath>..\..\..\SAM\build\SAM.Weather.dll</HintPath>
     </Reference>
