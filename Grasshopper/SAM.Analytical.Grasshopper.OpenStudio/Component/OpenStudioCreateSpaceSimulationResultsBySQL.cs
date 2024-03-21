@@ -14,7 +14,7 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         /// <summary>
         /// The latest version of this component
         /// </summary>
-        public override string LatestComponentVersion => "1.0.0";
+        public override string LatestComponentVersion => "1.0.1";
 
         /// <summary>
         /// Provides an Icon for the component.
@@ -27,7 +27,7 @@ namespace SAM.Analytical.Grasshopper.OpenStudio
         public OpenStudioCreateSpaceSimulationResultsBySQL()
           : base("OpenStudio.CreateSpaceSimulationResultsBySQL", "OpenStudio.CreateSpaceSimulationResultsBySQL",
               "Converts OpenStudio Sql Database to SpaceSymulationResults",
-              "SAM WIP", "OpenStudio")
+              "SAM", "OpenStudio")
         {
         }
 
