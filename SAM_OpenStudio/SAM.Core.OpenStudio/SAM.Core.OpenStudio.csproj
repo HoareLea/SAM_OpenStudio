@@ -113,10 +113,7 @@
     <Compile Include="Query\Values.cs" />
     <Compile Include="Create\SqlFile.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Interfaces\" />
-    <Folder Include="Modify\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json">
       <Version>13.0.2</Version>
