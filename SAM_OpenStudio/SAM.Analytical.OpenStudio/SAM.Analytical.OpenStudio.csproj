@@ -4,16 +4,9 @@
     <OutputType>Library</OutputType>
     <Deterministic>false</Deterministic>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
-    <AssemblyTitle>SAM.Analytical</AssemblyTitle>
-    <Product>SAM.Analytical</Product>
-    <Copyright>Copyright ©  2020</Copyright>
-    <AssemblyVersion>1.0.%2a</AssemblyVersion>
-    <FileVersion>1.0.%2a</FileVersion>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
     <Platforms>AnyCPU;x64</Platforms>
-	  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
-	  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
-    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <Platforms>x64</Platforms>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <OutputPath>..\..\build\</OutputPath>
@@ -24,24 +17,24 @@
     <DocumentationFile>..\..\build\SAM.Analytical.OpenStudio.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <OutputPath>..\build\</OutputPath>
+    <OutputPath>..\..\build\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
-    <OutputPath>..\build\</OutputPath>
+    <OutputPath>..\..\build\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
     <OutputPath>..\..\build\</OutputPath>
     <DocumentationFile>..\..\build\SAM.Analytical.OpenStudio.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-    <OutputPath>bin\x64\Release\</OutputPath>
+    <OutputPath>..\..\build\</OutputPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
     <OutputPath>..\..\build\</OutputPath>
     <DocumentationFile>..\..\build\SAM.Analytical.OpenStudio.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-    <OutputPath>bin\x86\Release\</OutputPath>
+    <OutputPath>..\..\build\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="SAM.Analytical">
