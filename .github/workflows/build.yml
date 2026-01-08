@@ -1,7 +1,6 @@
 name: Build (Windows)
 
 on:
-  # NOTES: Run CI on pushes, PRs, and manual trigger
   push:
     branches: [ "master", "main" ]
   pull_request:
@@ -10,15 +9,12 @@ on:
 
 jobs:
   build:
-    # NOTES: Safety guard if this repo is forked elsewhere
+    # Guard: if this ever gets merged upstream, it will "skip" there.
     if: github.repository_owner == 'SAM-BIM'
     runs-on: windows-2022
 
     env:
-      # NOTES: Prevent MSBuild reusing nodes (fixes random CI hangs)
       MSBUILDDISABLENODEREUSE: "1"
-
-      # NOTES: GitHub organisation and repo name
       ORG_NAME: "SAM-BIM"
       REPO_NAME: "SAM_OpenStudio"
 
@@ -29,108 +25,114 @@ jobs:
           fetch-depth: 0
           path: ${{ env.REPO_NAME }}
 
-      - name: Setup .NET
-        # NOTES: Needed for restore, even though we use msbuild
+      - name: Setup .NET 8
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.x"
 
       - name: Setup MSBuild
-        # NOTES: Makes `msbuild` available on the runner
         uses: microsoft/setup-msbuild@v2
 
-      - name: Clone dependency repos
+      - name: Clone dependency repos (siblings)
         shell: pwsh
         run: |
-          # NOTES: Stop immediately on first error
           $ErrorActionPreference = 'Stop'
 
-          $org  = "${{ env.ORG_NAME }}"
-          $repo = "${{ env.REPO_NAME }}"
+          $org  = '${{ env.ORG_NAME }}'
+          $repo = '${{ env.REPO_NAME }}'
 
-          # NOTES: Build order is IMPORTANT
+          # Build order: deps first, current repo LAST
           $buildOrder = @(
             'SAM'
             'SAM_SQLite'
-            'SAM_OpenStudio'
             $repo
           )
 
-          # NOTES: Clone everything except the last repo
-          $deps = $buildOrder[0..($buildOrder.Count-2)]
-          foreach ($r in $deps) {
+          # Clone deps (everything except current repo which Actions already checked out)
+          foreach ($r in $buildOrder) {
+            if ($r -eq $repo) { continue }
             if (Test-Path $r) { continue }
+            Write-Host "Cloning https://github.com/$org/$r.git"
             git clone --depth 1 "https://github.com/$org/$r.git" $r
           }
 
-          # NOTES: Shared binary drop location (expected by projects)
-          New-Item -ItemType Directory -Force -Path "SAM_Windows\build" | Out-Null
-
-      - name: Restore + Rebuild (per-solution platform)
+      - name: Restore + Rebuild in order (CI props like SAM_Deploy)
         shell: pwsh
         run: |
-          # NOTES: Fail fast
           $ErrorActionPreference = 'Stop'
 
-          # NOTES:
-          # Collect ALL reference locations used by downstream solutions
-          $refPaths = @()
-          $refPaths += (Resolve-Path 'SAM_Windows\build').Path
-          $referencePath = ($refPaths -join ';')
+          $repo = '${{ env.REPO_NAME }}'
 
-          # NOTES:
-          # Function to build ONE solution with ONE platform
-          function Build-Sln($sln, $platform) {
+          # Common MSBuild args (ARRAY — do not join into one string)
+          $common = @(
+            '/m:1'
+            '/nr:false'
+            '/v:m'
+            '/p:Configuration=Release'
+            '/p:UseSharedCompilation=false'
+            '/p:RunPostBuildEvent=OnOutputUpdated'
+          )
 
-            Write-Host "==> Restore ($platform): $sln"
-            msbuild $sln /t:Restore `
-              /m:1 /nr:false /v:m `
-              /p:Configuration=Release `
-              /p:Platform="$platform" `
-              /p:UseSharedCompilation=false `
-              /p:RunPostBuildEvent=OnOutputUpdated `
-              "/p:ReferencePath=$referencePath"
+          # Build order: deps first, current repo LAST
+          $buildOrder = @(
+            'SAM'
+            'SAM_SQLite'
+            $repo
+          )
 
-            Write-Host "==> Rebuild ($platform): $sln"
-            msbuild $sln /t:Rebuild `
-              /m:1 /nr:false /v:m `
-              /p:Configuration=Release `
-              /p:Platform="$platform" `
-              /p:UseSharedCompilation=false `
-              /p:RunPostBuildEvent=OnOutputUpdated `
-              "/p:ReferencePath=$referencePath"
+          # OPTIONAL platform overrides (default is Any CPU).
+          # Only set x64 if that solution actually has an x64 platform in Configuration Manager.
+          $platformByRepo = @{
+            # 'SAM_SQLite' = 'x64'
+            # $repo        = 'x64'
           }
 
-          # NOTES:
-          # Platform mapping is CRITICAL
-          # SAM           → Any CPU
-          # SAM_SQLite    → x64
-          # OpenStudio    → x64
-          Build-Sln "SAM\SAM.sln" "Any CPU"
-          Build-Sln "SAM_SQLite\SAM_SQLite.sln" "x64"
+          function Get-PlatformArg([string]$repoName) {
+            $p = 'Any CPU'
+            if ($platformByRepo.ContainsKey($repoName)) { $p = $platformByRepo[$repoName] }
 
-          # NOTES:
-          # After SAM_SQLite builds, publish its DLLs
-          # SAM_OpenStudio expects SAM.Core.SQLite.dll in SAM_Windows\build
-          Write-Host "==> Publishing SAM_SQLite binaries"
-          $sqliteDlls = Get-ChildItem `
-            -Path "SAM_SQLite" `
-            -Recurse `
-            -Filter "SAM.Core.SQLite.dll"
-
-          foreach ($dll in $sqliteDlls) {
-            Copy-Item $dll.FullName "SAM_Windows\build" -Force
+            if ($p -match '\s') { return "/p:Platform=`"$p`"" }
+            return "/p:Platform=$p"
           }
 
-          # NOTES: Now OpenStudio can see SQLite
-          Build-Sln "SAM_OpenStudio\SAM_OpenStudio.sln" "x64"
-          Build-Sln "${{ env.REPO_NAME }}\${{ env.REPO_NAME }}.sln" "x64"
+          function Find-Solution([string]$repoName) {
+            $expected = Join-Path $repoName "$repoName.sln"
+            if (Test-Path $expected) { return (Resolve-Path $expected).Path }
+
+            $rootSln = Get-ChildItem -Path $repoName -Filter *.sln -File -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($rootSln) { return $rootSln.FullName }
+
+            $anySln = Get-ChildItem -Path $repoName -Recurse -Filter *.sln -File -ErrorAction SilentlyContinue |
+                      Where-Object { $_.FullName -notmatch '\\(bin|obj|packages)\\' } |
+                      Select-Object -First 1
+            if ($anySln) { return $anySln.FullName }
+
+            throw "No .sln found under: $repoName"
+          }
+
+          $solutionItems = foreach ($r in $buildOrder) {
+            $slnPath = Find-Solution $r
+            [pscustomobject]@{ Repo = $r; Sln = $slnPath }
+          }
+
+          foreach ($it in $solutionItems) {
+            $platArg = Get-PlatformArg $it.Repo
+            Write-Host "==> Restore: $($it.Sln) (Repo=$($it.Repo), Platform=$platArg)"
+            & msbuild $it.Sln /t:Restore @common $platArg
+            if ($LASTEXITCODE -ne 0) { throw "Restore failed: $($it.Repo)" }
+          }
+
+          foreach ($it in $solutionItems) {
+            $platArg = Get-PlatformArg $it.Repo
+            Write-Host "==> Rebuild: $($it.Sln) (Repo=$($it.Repo), Platform=$platArg)"
+            & msbuild $it.Sln /t:Rebuild @common $platArg
+            if ($LASTEXITCODE -ne 0) { throw "Rebuild failed: $($it.Repo)" }
+          }
 
       - name: Upload build folders (optional)
-        # NOTES: Useful for debugging CI artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: SAM_OpenStudio-build
+          name: ${{ env.REPO_NAME }}-build-folders
           path: |
             **\build\*
           if-no-files-found: warn
