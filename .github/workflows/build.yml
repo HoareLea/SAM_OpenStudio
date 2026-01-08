@@ -9,6 +9,7 @@ on:
 
 jobs:
   build:
+    # Guard: if merged upstream, it will be skipped there.
     if: github.repository_owner == 'SAM-BIM'
     runs-on: windows-2022
 
@@ -44,7 +45,6 @@ jobs:
           $buildOrder = @(
             'SAM'
             'SAM_SQLite'
-            'SAM_OpenStudio'
             $repo
           )
 
@@ -71,18 +71,20 @@ jobs:
             '/p:RunPostBuildEvent=OnOutputUpdated'
           )
 
+          # Same order as clone: deps first, current repo LAST
           $buildOrder = @(
             'SAM'
             'SAM_SQLite'
-            'SAM_OpenStudio'
             $repo
           )
 
-          # Only specify Platform where it is needed (and has no spaces)
+          # Platform overrides (ONLY where needed).
+          # IMPORTANT: don't put "$repo = 'x64'" inside the literal (causes duplicate key).
           $platformByRepo = @{
-            'SAM_OpenStudio' = 'x64'
-            $repo        = 'x64'
+            'SAM_SQLite' = 'x64'
           }
+          # Set platform for the current repo (overwrites safely if already present)
+          $platformByRepo[$repo] = 'x64'
 
           function Find-Solution([string]$repoName) {
             $expected = Join-Path $repoName "$repoName.sln"
@@ -107,8 +109,9 @@ jobs:
           foreach ($it in $solutionItems) {
             $args = @('/t:Restore') + $common
             if ($platformByRepo.ContainsKey($it.Repo)) {
-              $args += "/p:Platform=$($platformByRepo[$it.Repo])"
-              Write-Host "==> Restore: $($it.Sln) (Repo=$($it.Repo), Platform=$($platformByRepo[$it.Repo]))"
+              $p = $platformByRepo[$it.Repo]
+              $args += "/p:Platform=$p"
+              Write-Host "==> Restore: $($it.Sln) (Repo=$($it.Repo), Platform=$p)"
             } else {
               Write-Host "==> Restore: $($it.Sln) (Repo=$($it.Repo), Platform=default)"
             }
@@ -120,8 +123,9 @@ jobs:
           foreach ($it in $solutionItems) {
             $args = @('/t:Rebuild') + $common
             if ($platformByRepo.ContainsKey($it.Repo)) {
-              $args += "/p:Platform=$($platformByRepo[$it.Repo])"
-              Write-Host "==> Rebuild: $($it.Sln) (Repo=$($it.Repo), Platform=$($platformByRepo[$it.Repo]))"
+              $p = $platformByRepo[$it.Repo]
+              $args += "/p:Platform=$p"
+              Write-Host "==> Rebuild: $($it.Sln) (Repo=$($it.Repo), Platform=$p)"
             } else {
               Write-Host "==> Rebuild: $($it.Sln) (Repo=$($it.Repo), Platform=default)"
             }
