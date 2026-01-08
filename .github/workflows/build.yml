@@ -69,6 +69,7 @@ jobs:
             '/p:Configuration=Release'
             '/p:UseSharedCompilation=false'
             '/p:RunPostBuildEvent=OnOutputUpdated'
+            $refArg
           )
 
           # Same order as clone: deps first, current repo LAST
@@ -81,7 +82,7 @@ jobs:
           # Platform overrides (ONLY where needed).
           # IMPORTANT: don't put "$repo = 'x64'" inside the literal (causes duplicate key).
           $platformByRepo = @{
-            'SAM_SQLite' = 'x64'
+            'SAM_OpenStudio' = 'x64'
           }
           # Set platform for the current repo (overwrites safely if already present)
           $platformByRepo[$repo] = 'x64'
