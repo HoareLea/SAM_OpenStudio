@@ -45,6 +45,7 @@ jobs:
           $buildOrder = @(
             'SAM'
             'SAM_SQLite'
+            'SAM_OpenStudio'
             $repo
           )
 
@@ -77,12 +78,15 @@ jobs:
           $buildOrder = @(
             'SAM'
             'SAM_SQLite'
+            'SAM_OpenStudio'
             $repo
           )
 
           # OPTIONAL platform overrides (default is Any CPU).
           # Only set x64 if that solution actually has an x64 platform in Configuration Manager.
           $platformByRepo = @{
+            'SAM_SQLite'= 'x64'
+            'SAM_OpenStudio'= 'x64'
             # 'SAM_SQLite' = 'x64'
             # $repo        = 'x64'
           }
