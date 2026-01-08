@@ -24,7 +24,6 @@ jobs:
 
     steps:
       - name: Checkout this repo
-        # NOTES: Check out the main repository into a named folder
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -46,15 +45,10 @@ jobs:
           # NOTES: Stop immediately on first error
           $ErrorActionPreference = 'Stop'
 
-          # NOTES: Short aliases
           $org  = "${{ env.ORG_NAME }}"
           $repo = "${{ env.REPO_NAME }}"
 
           # NOTES: Build order is IMPORTANT
-          # - SAM → base types (Any CPU)
-          # - SAM_SQLite → x64
-          # - SAM_OpenStudio → x64 (OpenStudio requires this)
-          # - $repo → current repo (x64)
           $buildOrder = @(
             'SAM'
             'SAM_SQLite'
@@ -69,7 +63,7 @@ jobs:
             git clone --depth 1 "https://github.com/$org/$r.git" $r
           }
 
-          # NOTES: Some projects expect this path to exist
+          # NOTES: Shared binary drop location (expected by projects)
           New-Item -ItemType Directory -Force -Path "SAM_Windows\build" | Out-Null
 
       - name: Restore + Rebuild (per-solution platform)
@@ -78,12 +72,14 @@ jobs:
           # NOTES: Fail fast
           $ErrorActionPreference = 'Stop'
 
-          # NOTES: Native DLL drop location used by projects
-          $windowsRef = (Resolve-Path 'SAM_Windows\build').Path
+          # NOTES:
+          # Collect ALL reference locations used by downstream solutions
+          $refPaths = @()
+          $refPaths += (Resolve-Path 'SAM_Windows\build').Path
+          $referencePath = ($refPaths -join ';')
 
           # NOTES:
-          # This function builds ONE solution with ONE platform
-          # Platform MUST match what the .sln actually defines
+          # Function to build ONE solution with ONE platform
           function Build-Sln($sln, $platform) {
 
             Write-Host "==> Restore ($platform): $sln"
@@ -107,10 +103,26 @@ jobs:
 
           # NOTES:
           # Platform mapping is CRITICAL
-          # SAM           → Any CPU only
-          # OpenStudio    → x64 only
+          # SAM           → Any CPU
+          # SAM_SQLite    → x64
+          # OpenStudio    → x64
           Build-Sln "SAM\SAM.sln" "Any CPU"
           Build-Sln "SAM_SQLite\SAM_SQLite.sln" "x64"
+
+          # NOTES:
+          # After SAM_SQLite builds, publish its DLLs
+          # SAM_OpenStudio expects SAM.Core.SQLite.dll in SAM_Windows\build
+          Write-Host "==> Publishing SAM_SQLite binaries"
+          $sqliteDlls = Get-ChildItem `
+            -Path "SAM_SQLite" `
+            -Recurse `
+            -Filter "SAM.Core.SQLite.dll"
+
+          foreach ($dll in $sqliteDlls) {
+            Copy-Item $dll.FullName "SAM_Windows\build" -Force
+          }
+
+          # NOTES: Now OpenStudio can see SQLite
           Build-Sln "SAM_OpenStudio\SAM_OpenStudio.sln" "x64"
           Build-Sln "${{ env.REPO_NAME }}\${{ env.REPO_NAME }}.sln" "x64"
 
