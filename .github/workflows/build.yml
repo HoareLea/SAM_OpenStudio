@@ -79,6 +79,7 @@ jobs:
             '/v:m'
             '/p:Configuration=Release'
             '/p:UseSharedCompilation=false'
+            '/p:Platform=x64'
             '/p:RunPostBuildEvent=OnOutputUpdated'
             "/p:ReferencePath=$windowsRef"
           )
