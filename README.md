@@ -62,6 +62,6 @@ The project history (Git) records authorship and provenance of all changes.
 
 See:
 - `LICENSE`
-- `NOTICE`
 - `COPYRIGHT_HEADER.txt`
+
 
