@@ -44,6 +44,7 @@ jobs:
           $buildOrder = @(
             'SAM'
             'SAM_SQLite'
+            'SAM_OpenStudio'
             $repo
           )
 
@@ -73,12 +74,13 @@ jobs:
           $buildOrder = @(
             'SAM'
             'SAM_SQLite'
+            'SAM_OpenStudio'
             $repo
           )
 
           # Only specify Platform where it is needed (and has no spaces)
           $platformByRepo = @{
-            'SAM_SQLite' = 'x64'
+            'SAM_OpenStudio' = 'x64'
             $repo        = 'x64'
           }
 
