@@ -9,7 +9,6 @@ on:
 
 jobs:
   build:
-    # Guard: if this ever gets merged upstream, it will "skip" there.
     if: github.repository_owner == 'SAM-BIM'
     runs-on: windows-2022
 
@@ -41,30 +40,27 @@ jobs:
           $org  = '${{ env.ORG_NAME }}'
           $repo = '${{ env.REPO_NAME }}'
 
-          # Build order: deps first, current repo LAST
+          # deps first, current repo LAST (no duplicates)
           $buildOrder = @(
             'SAM'
             'SAM_SQLite'
-            'SAM_OpenStudio'
             $repo
           )
 
-          # Clone deps (everything except current repo which Actions already checked out)
           foreach ($r in $buildOrder) {
-            if ($r -eq $repo) { continue }
+            if ($r -eq $repo) { continue }   # already checked out
             if (Test-Path $r) { continue }
             Write-Host "Cloning https://github.com/$org/$r.git"
             git clone --depth 1 "https://github.com/$org/$r.git" $r
           }
 
-      - name: Restore + Rebuild in order (CI props like SAM_Deploy)
+      - name: Restore + Rebuild in order (safe Platform handling)
         shell: pwsh
         run: |
           $ErrorActionPreference = 'Stop'
 
           $repo = '${{ env.REPO_NAME }}'
 
-          # Common MSBuild args (ARRAY — do not join into one string)
           $common = @(
             '/m:1'
             '/nr:false'
@@ -74,29 +70,16 @@ jobs:
             '/p:RunPostBuildEvent=OnOutputUpdated'
           )
 
-          # Build order: deps first, current repo LAST
           $buildOrder = @(
             'SAM'
             'SAM_SQLite'
-            'SAM_OpenStudio'
             $repo
           )
 
-          # OPTIONAL platform overrides (default is Any CPU).
-          # Only set x64 if that solution actually has an x64 platform in Configuration Manager.
+          # Only specify Platform where it is needed (and has no spaces)
           $platformByRepo = @{
-            'SAM_SQLite'= 'x64'
-            'SAM_OpenStudio'= 'x64'
-            # 'SAM_SQLite' = 'x64'
-            # $repo        = 'x64'
-          }
-
-          function Get-PlatformArg([string]$repoName) {
-            $p = 'Any CPU'
-            if ($platformByRepo.ContainsKey($repoName)) { $p = $platformByRepo[$repoName] }
-
-            if ($p -match '\s') { return "/p:Platform=`"$p`"" }
-            return "/p:Platform=$p"
+            'SAM_SQLite' = 'x64'
+            $repo        = 'x64'
           }
 
           function Find-Solution([string]$repoName) {
@@ -120,16 +103,28 @@ jobs:
           }
 
           foreach ($it in $solutionItems) {
-            $platArg = Get-PlatformArg $it.Repo
-            Write-Host "==> Restore: $($it.Sln) (Repo=$($it.Repo), Platform=$platArg)"
-            & msbuild $it.Sln /t:Restore @common $platArg
+            $args = @('/t:Restore') + $common
+            if ($platformByRepo.ContainsKey($it.Repo)) {
+              $args += "/p:Platform=$($platformByRepo[$it.Repo])"
+              Write-Host "==> Restore: $($it.Sln) (Repo=$($it.Repo), Platform=$($platformByRepo[$it.Repo]))"
+            } else {
+              Write-Host "==> Restore: $($it.Sln) (Repo=$($it.Repo), Platform=default)"
+            }
+
+            & msbuild $it.Sln @args
             if ($LASTEXITCODE -ne 0) { throw "Restore failed: $($it.Repo)" }
           }
 
           foreach ($it in $solutionItems) {
-            $platArg = Get-PlatformArg $it.Repo
-            Write-Host "==> Rebuild: $($it.Sln) (Repo=$($it.Repo), Platform=$platArg)"
-            & msbuild $it.Sln /t:Rebuild @common $platArg
+            $args = @('/t:Rebuild') + $common
+            if ($platformByRepo.ContainsKey($it.Repo)) {
+              $args += "/p:Platform=$($platformByRepo[$it.Repo])"
+              Write-Host "==> Rebuild: $($it.Sln) (Repo=$($it.Repo), Platform=$($platformByRepo[$it.Repo]))"
+            } else {
+              Write-Host "==> Rebuild: $($it.Sln) (Repo=$($it.Repo), Platform=default)"
+            }
+
+            & msbuild $it.Sln @args
             if ($LASTEXITCODE -ne 0) { throw "Rebuild failed: $($it.Repo)" }
           }
 
