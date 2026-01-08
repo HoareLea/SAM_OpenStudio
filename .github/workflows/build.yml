@@ -1,6 +1,7 @@
 name: Build (Windows)
 
 on:
+  # NOTES: Run CI on pushes, PRs, and manual trigger
   push:
     branches: [ "master", "main" ]
   pull_request:
@@ -9,43 +10,51 @@ on:
 
 jobs:
   build:
-    # Guard: if this workflow ever gets merged upstream (e.g. HoareLea),
-    # it will show as "skipped" there and won't break their CI.
+    # NOTES: Safety guard if this repo is forked elsewhere
     if: github.repository_owner == 'SAM-BIM'
     runs-on: windows-2022
 
     env:
+      # NOTES: Prevent MSBuild reusing nodes (fixes random CI hangs)
       MSBUILDDISABLENODEREUSE: "1"
+
+      # NOTES: GitHub organisation and repo name
       ORG_NAME: "SAM-BIM"
-      # >>> CHANGE THIS PER REPO <<<
-      # Examples: SAM, SAM_gbXML, SAM_GEM, SAM_Tas, ...
       REPO_NAME: "SAM_OpenStudio"
 
     steps:
       - name: Checkout this repo
+        # NOTES: Check out the main repository into a named folder
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
           path: ${{ env.REPO_NAME }}
 
-      - name: Setup .NET 8
+      - name: Setup .NET
+        # NOTES: Needed for restore, even though we use msbuild
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: "8.x"
 
       - name: Setup MSBuild
+        # NOTES: Makes `msbuild` available on the runner
         uses: microsoft/setup-msbuild@v2
 
-      - name: Clone dependency repos (siblings)
+      - name: Clone dependency repos
         shell: pwsh
         run: |
+          # NOTES: Stop immediately on first error
           $ErrorActionPreference = 'Stop'
 
-          $org  = '${{ env.ORG_NAME }}'
-          $repo = '${{ env.REPO_NAME }}'
+          # NOTES: Short aliases
+          $org  = "${{ env.ORG_NAME }}"
+          $repo = "${{ env.REPO_NAME }}"
 
-          # >>> ADJUST BUILD ORDER HERE IF NEEDED <<<
-          # Keep the current repo LAST.
+          # NOTES: Build order is IMPORTANT
+          # - SAM → base types (Any CPU)
+          # - SAM_SQLite → x64
+          # - SAM_OpenStudio → x64 (OpenStudio requires this)
+          # - $repo → current repo (x64)
           $buildOrder = @(
             'SAM'
             'SAM_SQLite'
@@ -53,69 +62,63 @@ jobs:
             $repo
           )
 
-          # Clone everything except the last one (already checked out by Actions)
+          # NOTES: Clone everything except the last repo
           $deps = $buildOrder[0..($buildOrder.Count-2)]
           foreach ($r in $deps) {
             if (Test-Path $r) { continue }
-            Write-Host "Cloning https://github.com/$org/$r.git"
             git clone --depth 1 "https://github.com/$org/$r.git" $r
           }
 
-          # Ensure ReferencePath exists even before SAM_Windows builds
+          # NOTES: Some projects expect this path to exist
           New-Item -ItemType Directory -Force -Path "SAM_Windows\build" | Out-Null
 
-      - name: Restore + Rebuild in order (CI props like SAM_Deploy)
+      - name: Restore + Rebuild (per-solution platform)
         shell: pwsh
         run: |
+          # NOTES: Fail fast
           $ErrorActionPreference = 'Stop'
 
-          $repo = '${{ env.REPO_NAME }}'
+          # NOTES: Native DLL drop location used by projects
           $windowsRef = (Resolve-Path 'SAM_Windows\build').Path
 
-          # IMPORTANT: keep these as an ARRAY of args (do NOT join into one string)
-          $common = @(
-            '/m:1'
-            '/nr:false'
-            '/v:m'
-            '/p:Configuration=Release'
-            '/p:UseSharedCompilation=false'
-            '/p:Platform=x64'
-            '/p:RunPostBuildEvent=OnOutputUpdated'
-            "/p:ReferencePath=$windowsRef"
-          )
+          # NOTES:
+          # This function builds ONE solution with ONE platform
+          # Platform MUST match what the .sln actually defines
+          function Build-Sln($sln, $platform) {
 
-          # If you really want Platform, use QUOTED Any CPU:
-          # $common += '/p:Platform="Any CPU"'
+            Write-Host "==> Restore ($platform): $sln"
+            msbuild $sln /t:Restore `
+              /m:1 /nr:false /v:m `
+              /p:Configuration=Release `
+              /p:Platform="$platform" `
+              /p:UseSharedCompilation=false `
+              /p:RunPostBuildEvent=OnOutputUpdated `
+              "/p:ReferencePath=$windowsRef"
 
-          # Same build order as above (keep repo LAST)
-          $buildOrder = @(
-            'SAM'
-            'SAM_SQLite'
-            'SAM_OpenStudio'
-            $repo
-          )
-
-          # Convert build order -> solution paths (robust: first .sln in each folder)
-          $solutions = foreach ($r in $buildOrder) {
-            $sln = Get-ChildItem -Path $r -Filter *.sln -File | Select-Object -First 1
-            if (-not $sln) { throw "No .sln found under: $r" }
-            $sln.FullName
+            Write-Host "==> Rebuild ($platform): $sln"
+            msbuild $sln /t:Rebuild `
+              /m:1 /nr:false /v:m `
+              /p:Configuration=Release `
+              /p:Platform="$platform" `
+              /p:UseSharedCompilation=false `
+              /p:RunPostBuildEvent=OnOutputUpdated `
+              "/p:ReferencePath=$windowsRef"
           }
 
-          foreach ($sln in $solutions) {
-            Write-Host "==> Restore: $sln"
-            & msbuild $sln /t:Restore @common
-          }
-
-          foreach ($sln in $solutions) {
-            Write-Host "==> Rebuild: $sln"
-            & msbuild $sln /t:Rebuild @common
-          }
+          # NOTES:
+          # Platform mapping is CRITICAL
+          # SAM           → Any CPU only
+          # OpenStudio    → x64 only
+          Build-Sln "SAM\SAM.sln" "Any CPU"
+          Build-Sln "SAM_SQLite\SAM_SQLite.sln" "x64"
+          Build-Sln "SAM_OpenStudio\SAM_OpenStudio.sln" "x64"
+          Build-Sln "${{ env.REPO_NAME }}\${{ env.REPO_NAME }}.sln" "x64"
 
       - name: Upload build folders (optional)
+        # NOTES: Useful for debugging CI artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.REPO_NAME }}-build-folders
+          name: SAM_OpenStudio-build
           path: |
             **\build\*
           if-no-files-found: warn
