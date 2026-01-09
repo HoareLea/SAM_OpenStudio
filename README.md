@@ -12,8 +12,8 @@
 an open-source collection of tools designed to help engineers create, manage,
 and process analytical building models for energy and environmental analysis.
 
-This repository focuses on **OpenStudio model generation and interoperability utilities** and is intended
-to be used together with the SAM core libraries and related SAM-BIM modules.
+This repository provides **OpenStudio model generation and interoperability utilities**
+and is intended to be used alongside the SAM core libraries and related SAM-BIM modules.
 
 Welcome — and let’s keep the open-source journey going. 🤝
 
@@ -31,7 +31,7 @@ Welcome — and let’s keep the open-source journey going. 🤝
 To install **SAM** using the Windows installer, download and run the  
 [latest installer](https://github.com/SAM-BIM/SAM_Deploy/releases/latest).
 
-Alternatively, you can build the toolkit from source using Visual Studio.
+Alternatively, you can build the toolkit from source using Visual Studio.  
 See the main repository for details:  
 👉 https://github.com/SAM-BIM/SAM
 
@@ -41,21 +41,14 @@ See the main repository for details:
 
 - Target framework: **.NET / C#**
 - Coding style follows standard SAM-BIM conventions.
-- New or modified `.cs` files must include the SPDX header:
+- New or modified `.cs` files must include the SPDX header from `COPYRIGHT_HEADER.txt`
 
-```csharp
-// SPDX-License-Identifier: LGPL-3.0-or-later
-// Copyright (c) 2020-2026 Michal Dengusiak & Jakub Ziolkowski and contributors
-```
-
+---
 
 ## Licence
 
 This repository is free software licensed under the  
 **GNU Lesser General Public License v3.0 or later (LGPL-3.0-or-later)**.
-
-Copyright © 2020–2026  
-**Michal Dengusiak & Jakub Ziolkowski and contributors**
 
 Each contributor retains copyright to their respective contributions.  
 The project history (Git) records authorship and provenance of all changes.
@@ -64,5 +57,3 @@ See:
 - `LICENSE`
 - `NOTICE`
 - `COPYRIGHT_HEADER.txt`
-
-
