@@ -1,0 +1,144 @@
+name: Build (Windows)
+
+on:
+  push:
+    branches: [ "master", "main" ]
+  pull_request:
+    branches: [ "master", "main" ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    # Guard: if merged upstream, it will be skipped there.
+    if: github.repository_owner == 'SAM-BIM'
+    runs-on: windows-2022
+
+    env:
+      MSBUILDDISABLENODEREUSE: "1"
+      ORG_NAME: "SAM-BIM"
+      REPO_NAME: "SAM_OpenStudio"
+
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          path: ${{ env.REPO_NAME }}
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.x"
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Clone dependency repos (siblings)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $org  = '${{ env.ORG_NAME }}'
+          $repo = '${{ env.REPO_NAME }}'
+
+          # deps first, current repo LAST (no duplicates)
+          $buildOrder = @(
+            'SAM'
+            'SAM_SQLite'
+            $repo
+          )
+
+          foreach ($r in $buildOrder) {
+            if ($r -eq $repo) { continue }   # already checked out
+            if (Test-Path $r) { continue }
+            Write-Host "Cloning https://github.com/$org/$r.git"
+            git clone --depth 1 "https://github.com/$org/$r.git" $r
+          }
+
+      - name: Restore + Rebuild in order (safe Platform handling)
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+
+          $repo = '${{ env.REPO_NAME }}'
+
+          $common = @(
+            '/m:1'
+            '/nr:false'
+            '/v:m'
+            '/p:Configuration=Release'
+            '/p:UseSharedCompilation=false'
+            '/p:RunPostBuildEvent=OnOutputUpdated'
+            $refArg
+          )
+
+          # Same order as clone: deps first, current repo LAST
+          $buildOrder = @(
+            'SAM'
+            'SAM_SQLite'
+            $repo
+          )
+
+          # Platform overrides (ONLY where needed).
+          # IMPORTANT: don't put "$repo = 'x64'" inside the literal (causes duplicate key).
+          $platformByRepo = @{
+            'SAM_OpenStudio' = 'x64'
+          }
+          # Set platform for the current repo (overwrites safely if already present)
+          $platformByRepo[$repo] = 'x64'
+
+          function Find-Solution([string]$repoName) {
+            $expected = Join-Path $repoName "$repoName.sln"
+            if (Test-Path $expected) { return (Resolve-Path $expected).Path }
+
+            $rootSln = Get-ChildItem -Path $repoName -Filter *.sln -File -ErrorAction SilentlyContinue | Select-Object -First 1
+            if ($rootSln) { return $rootSln.FullName }
+
+            $anySln = Get-ChildItem -Path $repoName -Recurse -Filter *.sln -File -ErrorAction SilentlyContinue |
+                      Where-Object { $_.FullName -notmatch '\\(bin|obj|packages)\\' } |
+                      Select-Object -First 1
+            if ($anySln) { return $anySln.FullName }
+
+            throw "No .sln found under: $repoName"
+          }
+
+          $solutionItems = foreach ($r in $buildOrder) {
+            $slnPath = Find-Solution $r
+            [pscustomobject]@{ Repo = $r; Sln = $slnPath }
+          }
+
+          foreach ($it in $solutionItems) {
+            $args = @('/t:Restore') + $common
+            if ($platformByRepo.ContainsKey($it.Repo)) {
+              $p = $platformByRepo[$it.Repo]
+              $args += "/p:Platform=$p"
+              Write-Host "==> Restore: $($it.Sln) (Repo=$($it.Repo), Platform=$p)"
+            } else {
+              Write-Host "==> Restore: $($it.Sln) (Repo=$($it.Repo), Platform=default)"
+            }
+
+            & msbuild $it.Sln @args
+            if ($LASTEXITCODE -ne 0) { throw "Restore failed: $($it.Repo)" }
+          }
+
+          foreach ($it in $solutionItems) {
+            $args = @('/t:Rebuild') + $common
+            if ($platformByRepo.ContainsKey($it.Repo)) {
+              $p = $platformByRepo[$it.Repo]
+              $args += "/p:Platform=$p"
+              Write-Host "==> Rebuild: $($it.Sln) (Repo=$($it.Repo), Platform=$p)"
+            } else {
+              Write-Host "==> Rebuild: $($it.Sln) (Repo=$($it.Repo), Platform=default)"
+            }
+
+            & msbuild $it.Sln @args
+            if ($LASTEXITCODE -ne 0) { throw "Rebuild failed: $($it.Repo)" }
+          }
+
+      - name: Upload build folders (optional)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.REPO_NAME }}-build-folders
+          path: |
+            **\build\*
+          if-no-files-found: warn
