@@ -2,7 +2,6 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <OutputType>Library</OutputType>
-    <Deterministic>false</Deterministic>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
 	  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
@@ -43,7 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="OpenStudio">
@@ -54,9 +53,7 @@
     <PostBuildEvent>::Copy /Y "$(SolutionDir)references\*.dll" "$(SolutionDir)build\*.dll"</PostBuildEvent>
     <AssemblyTitle>SAM</AssemblyTitle>
     <Product>SAM</Product>
-    <Copyright>Copyright ©  2020</Copyright>
-    <AssemblyVersion>1.0.%2a</AssemblyVersion>
-    <FileVersion>1.0.%2a</FileVersion>
+    <Copyright>Copyright (c) 2020-2026 Michal Dengusiak &amp; Jakub Ziolkowski and contributors</Copyright>
     <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 </Project>

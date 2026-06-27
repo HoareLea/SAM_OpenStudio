@@ -1,4 +1,6 @@
-﻿using Newtonsoft.Json.Linq;
+﻿// SPDX-License-Identifier: LGPL-3.0-or-later
+// Copyright (c) 2020–2026 Michal Dengusiak & Jakub Ziolkowski and contributors
+using System.Text.Json.Nodes;
 using System;
 
 namespace SAM.Core.OpenStudio
@@ -20,9 +22,9 @@ namespace SAM.Core.OpenStudio
             this.second = second;
         }
         
-        public ShortDateTime(JObject jObject)
+        public ShortDateTime(JsonObject jObject)
         {
-            FromJObject(jObject);
+            FromJsonObject(jObject);
         }
 
         public ShortDateTime(ShortDateTime shortDateTime)
@@ -94,7 +96,7 @@ namespace SAM.Core.OpenStudio
             return string.Format("{0}/{1} {2}:{3}:{4}", month, day, hourString, minuteString, secondString);
         }
 
-        public bool FromJObject(JObject jObject)
+        public bool FromJsonObject(JsonObject jObject)
         {
             if(jObject == null)
             {
@@ -106,41 +108,41 @@ namespace SAM.Core.OpenStudio
                 return false;
             }
 
-            month = System.Convert.ToByte(jObject.Value<int>("Month"));
+            month = System.Convert.ToByte(jObject["Month"]?.GetValue<int>() ?? default(int));
 
             if (!jObject.ContainsKey("Day"))
             {
                 return false;
             }
 
-            day = System.Convert.ToByte(jObject.Value<int>("Day"));
+            day = System.Convert.ToByte(jObject["Day"]?.GetValue<int>() ?? default(int));
 
             if (!jObject.ContainsKey("Hour"))
             {
                 return false;
             }
 
-            hour = System.Convert.ToByte(jObject.Value<int>("Hour"));
+            hour = System.Convert.ToByte(jObject["Hour"]?.GetValue<int>() ?? default(int));
 
             if (!jObject.ContainsKey("Minute"))
             {
                 return false;
             }
 
-            minute = System.Convert.ToByte(jObject.Value<int>("Minute"));
+            minute = System.Convert.ToByte(jObject["Minute"]?.GetValue<int>() ?? default(int));
 
             if (!jObject.ContainsKey("Second"))
             {
                 return false;
             }
 
-            second = System.Convert.ToByte(jObject.Value<int>("Second"));
+            second = System.Convert.ToByte(jObject["Second"]?.GetValue<int>() ?? default(int));
             return true;
         }
 
-        public JObject ToJObject()
+        public JsonObject ToJsonObject()
         {
-            JObject result = new JObject();
+            JsonObject result = new JsonObject();
             result.Add("_type", SAM.Core.Query.FullTypeName(this));
 
             result.Add("Month", System.Convert.ToInt32(month));
