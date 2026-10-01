@@ -79,7 +79,7 @@ Facts that bind the implementation:
 5. **No test project exists** — created in M0 (`tests/`, net8.0, x64, NUnit unless an ecosystem convention dictates otherwise).
 6. **No SPDX headers exist** in current sources — add SPDX headers to **new files only**; do not churn existing files.
 7. **No EPW files exist** anywhere in the workspace — see §11.3 weather fixture policy.
-8. Workspace root on this machine: `C:\Users\Virtual Machine\Documents\GitHub\SAM-BIM`.
+8. Workspace root on this machine: `<user>\Documents\GitHub\SAM-BIM`.
 
 Naming alignment with the Roadmap (§6.2 of the roadmap): this plan's `OpenStudioConversionOptions` / `OpenStudioConversionResult.Diagnostics` / `OpenStudioSimulationRunner` fulfil the roadmap's `OpenStudioTranslationOptions` / `OpenStudioTranslationReport` / `OpenStudioSimulationRunner` intent. The diagnostics list serialised to JSON **is** the translation report.
 
@@ -581,7 +581,7 @@ Read first:
   docs/SAM_OpenStudio_MVP_Implementation_Plan.md   (this plan — binding)
   docs/SAM_Simulation_Engine_Roadmap.md            (strategic context)
 
-Workspace: C:\Users\Virtual Machine\Documents\GitHub\SAM-BIM
+Workspace: <user>\Documents\GitHub\SAM-BIM
 Primary repository: SAM_OpenStudio (branch feature/analytical-model-to-openstudio-mvp,
 branched off sow/2026-Q3).
 Reference repositories (READ-ONLY): SAM, SAM_LadybugTools, SAM_SQLite.

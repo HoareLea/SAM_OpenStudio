@@ -25,7 +25,7 @@ review findings are resolved. The branch is ready for PR into `sow/2026-Q3`.**
 
 User-performed, 2026-07-19, commit `fd2c0a7` (assemblies deployed to `%APPDATA%\SAM` by the
 `-m:1` solution build). Independently verified against the generated artifacts in
-`C:\Users\Virtual Machine\Documents\SAM_daily\2026-07-19 OpenStudio\simulation-fixed`:
+`<user>\Documents\SAM_daily\2026-07-19 OpenStudio\simulation-fixed`:
 
 | Check | Result |
 | --- | --- |
@@ -105,7 +105,7 @@ then PR into sow/2026-Q3.
 ## Resume commands
 
 ```
-cd "C:\Users\Virtual Machine\Documents\GitHub\SAM-BIM\SAM_OpenStudio"
+cd "<user>\Documents\GitHub\SAM-BIM\SAM_OpenStudio"
 git checkout feature/analytical-model-to-openstudio-mvp
 dotnet build SAM_OpenStudio.sln -c Debug -p:Platform=x64
 dotnet test tests/SAM.Analytical.OpenStudio.Tests/SAM.Analytical.OpenStudio.Tests.csproj -c Debug -p:Platform=x64
