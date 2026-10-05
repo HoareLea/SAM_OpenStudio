@@ -6,7 +6,6 @@
 **Base branch:** `sow/2026-Q3` (always branch off this; PRs target this)
 **Feature branch:** `feature/analytical-model-to-openstudio-mvp`
 **Related:** [SAM_Simulation_Engine_Roadmap.md](SAM_Simulation_Engine_Roadmap.md) — this plan executes Roadmap **Phase 1** and the adapter-structure part of **Phase 2**.
-**Execution model:** Claude Fable 5 (Max effort) implements the complete MVP in one run; Codex GPT-5.6 Sol (Max effort) reviews independently; see §13.
 
 ---
 
@@ -80,6 +79,7 @@ Facts that bind the implementation:
 6. **No SPDX headers exist** in current sources — add SPDX headers to **new files only**; do not churn existing files.
 7. **No EPW files exist** anywhere in the workspace — see §11.3 weather fixture policy.
 8. Workspace root on this machine: `<user>\Documents\GitHub\SAM-BIM`.
+9. **Existing public APIs are preserved** unless a change is explicitly justified in the audit doc (`docs/openstudio-mvp-audit.md`).
 
 Naming alignment with the Roadmap (§6.2 of the roadmap): this plan's `OpenStudioConversionOptions` / `OpenStudioConversionResult.Diagnostics` / `OpenStudioSimulationRunner` fulfil the roadmap's `OpenStudioTranslationOptions` / `OpenStudioTranslationReport` / `OpenStudioSimulationRunner` intent. The diagnostics list serialised to JSON **is** the translation report.
 
@@ -518,33 +518,9 @@ Plus: conversion-report snapshots, diagnostic-code assertions, deterministic-nam
 
 ---
 
-## 13. Execution model
+## 13. Milestones
 
-### Five stages, cross-vendor review
-
-```text
-Stage 1  Claude Fable 5 (Max)      Complete MVP in ONE run — milestones M0–M8, commit per gate
-Stage 2  same session              git push -u origin feature/analytical-model-to-openstudio-mvp
-Stage 3  Codex GPT-5.6 Sol (Max)   Full independent technical review — findings only, no edits
-Stage 4  Claude Fable 5 (High/Max) Fix confirmed P0/P1 findings — one commit + regression test each
-Stage 5  Claude Fable 5 (Medium)   Final validation: full suite + ≥3 EnergyPlus runs + Rhino 8 smoke test → PR into sow/2026-Q3
-```
-
-| Stage | Tool | Model | Effort | Output |
-| --- | --- | --- | --- | --- |
-| 1. MVP in one run (M0–M8) | Claude Code, fresh session | **Claude Fable 5** | **Max** | Converter + tests + docs; commit per milestone |
-| 2. Push | same session | — | — | Feature branch on origin |
-| 3. Independent review | **Codex CLI** | **GPT-5.6 Sol** | **Max** | `docs/openstudio-mvp-review.md`, P0–P3 findings; review-only |
-| 4. P0/P1 fixes | Claude Code (Sol acceptable) | Fable 5 | High (Max for geometry/schedule semantics) | One commit per finding + regression test |
-| 5. Validation + PR | Claude Code | Fable 5 | Medium | Suite + ≥3 simulations + Rhino 8 smoke test; PR |
-
-Optional supplement after Stage 4: `/code-review ultra <PR#>` (Claude multi-agent cloud review; user-triggered).
-
-Rationale: implementer and reviewer come from different model families — defect-class diversity, with the implementer holding the entire conversion chain in one context. Milestones replace the original 14 phase-gated prompts: they preserve reviewability, bisectability and resumability without breaking the agent's end-to-end understanding.
-
-### Stage-1 milestones
-
-Every milestone ends with: **solution builds + all tests pass + commit + update of `docs/openstudio-mvp-status.md`**. The status file records: current milestone completed, commit SHA, tests executed, known limitations, next milestone, SDK and CLI versions selected, and the commands needed to resume. This protects the one-run strategy against context, usage or machine limits — any fresh session resumes from the last gate.
+Every milestone ends with: **solution builds + all tests pass + commit + update of `docs/openstudio-mvp-status.md`**. The status file records: current milestone completed, commit SHA, tests executed, known limitations, next milestone, and the SDK and CLI versions selected.
 
 | M | Scope | Exit gate |
 | --- | --- | --- |
@@ -558,7 +534,7 @@ Every milestone ends with: **solution builds + all tests pass + commit + update 
 | **M7** | Full 10-fixture regression suite (§12) with semantic assertions; no-source-mutation and disposal checks | All fixtures green |
 | **M8** | Thin Grasshopper components (`AnalyticalModelToOpenStudio`, `RunOpenStudioModel`, `OpenStudioLoadResults`); native-DLL packaging for net8; workflow docs; self-check against §4 | Solution + components build; MVP checklist table completed in status file |
 
-### Mandatory pre-PR gate (Stage 5, human-assisted) — Rhino 8 smoke test
+### Mandatory pre-PR gate — Rhino 8 smoke test
 
 ```text
 Rhino 8 starts
@@ -569,99 +545,11 @@ A one-zone model converts without native-DLL loading errors
 
 A solution build alone does not prove x64 native deployment — this is one of the largest project risks. Comprehensive Rhino 8/9 testing remains follow-up after the PR.
 
----
-
-## 14. Stage-1 implementation brief (base prompt for the fresh Fable 5 Max session)
-
-```text
-You are a senior C# building-performance engineer implementing the SAM →
-OpenStudio MVP in one continuous run.
-
-Read first:
-  docs/SAM_OpenStudio_MVP_Implementation_Plan.md   (this plan — binding)
-  docs/SAM_Simulation_Engine_Roadmap.md            (strategic context)
-
-Workspace: <user>\Documents\GitHub\SAM-BIM
-Primary repository: SAM_OpenStudio (branch feature/analytical-model-to-openstudio-mvp,
-branched off sow/2026-Q3).
-Reference repositories (READ-ONLY): SAM, SAM_LadybugTools, SAM_SQLite.
-SAM assemblies are consumed prebuilt from SAM\build\ via existing HintPath references.
-
-Target: native conversion SAM.Analytical.AnalyticalModel → OpenStudio.Model.Model,
-sufficient to run an EnergyPlus Ideal Loads simulation and extract heating/cooling
-loads via the existing SQL readers.
-
-Architecture rules:
-1.  SAM_LadybugTools is a semantic reference only — no Honeybee/Ladybug dependency.
-2.  Use the OpenStudio C# SDK directly (version per the M0 gate, plan §11.1).
-3.  Generic infrastructure in SAM.Core.OpenStudio; geometry primitives in
-    SAM.Geometry.OpenStudio; analytical conversion in SAM.Analytical.OpenStudio;
-    Grasshopper components thin.
-4.  Follow existing repo conventions: static partial Convert/Query/Create/Modify
-    classes, one file per method group, netstandard2.0, x64, output ..\..\build\.
-5.  SAM AdjacencyCluster relationships are the topology source of truth.
-6.  Preserve SAM GUID traceability and deterministic object names (plan §7).
-7.  Never silently substitute missing materials, constructions, profiles or
-    internal-condition values — structured diagnostics (plan §6 codes).
-8.  Reuse the existing results-import code; do not duplicate it.
-9.  SPDX headers on NEW files only; preserve existing public APIs unless a change
-    is explicitly justified in the audit doc.
-10. No detailed HVAC. No modification of sibling repositories or master.
-11. Units from SAM source inspection only — write the two mapping docs before
-    coding M4 and M5.
-
-Working method:
-- Complete milestones M0–M8 in order (plan §13). At each gate: build the full
-  solution, run all tests, commit (conventional message, plan §16), and update
-  docs/openstudio-mvp-status.md (milestone, commit SHA, tests executed, known
-  limitations, next milestone, SDK+CLI versions, resume commands).
-- Inspect existing SAM implementations and the LadybugTools reference (plan §1
-  table) before writing each subsystem; document assumptions before coding.
-- Stop only on a hard blocker (record it in the status and audit docs) or when
-  the §4 definition of success is fully satisfied.
-- Finish by pushing the branch (Stage 2) and reporting: milestones completed,
-  commits, test counts, E2E simulation evidence, known limitations, risks.
-```
+Before the PR into `sow/2026-Q3`: the full test suite passes, at least three complete EnergyPlus simulations have run from the fixture set, and the smoke test above has passed.
 
 ---
 
-## 15. Stage-3 independent review brief (Codex GPT-5.6 Sol, Max effort)
-
-```text
-Act as an independent senior reviewer of the SAM → OpenStudio MVP on branch
-feature/analytical-model-to-openstudio-mvp (SAM_OpenStudio repository).
-You must NOT implement, edit, or commit code. Findings only.
-
-Read docs/SAM_OpenStudio_MVP_Implementation_Plan.md for the binding contract,
-then review the milestone commits individually for scoped context.
-
-Review for:
-- incorrect SAM semantics; geometry orientation defects; incorrect internal
-  adjacency; construction layer reversal; unit conversion errors; schedule
-  calendar errors (timestep, leap years); incorrectly conditioned spaces;
-- misuse of OpenStudio object ownership or lifetimes; native DLL deployment
-  risks (netstandard2.0 libraries and the net8 Grasshopper assembly);
-- mutation of the source AnalyticalModel; silent fallback behaviour;
-  missing validation; nondeterministic tests; excessive Grasshopper coupling;
-- SDK 3.8.0/CLI 3.10.0 version-translation risks if the M0 gate chose mixed
-  versions.
-
-Verification you must run:
-- build the full solution;
-- run the complete test suite;
-- run at least three complete EnergyPlus simulations from the fixture set and
-  check the M6 result criteria (plan §13).
-
-Produce docs/openstudio-mvp-review.md classifying every finding:
-  P0 blocking · P1 required before merge · P2 follow-up · P3 optional
-with file/line references and reproduction evidence. Do not expand MVP scope.
-```
-
-Stage 4 (separate session, Claude Fable 5 High — Max for geometry/schedule semantics): fix confirmed P0/P1 findings only, one commit per finding, each with a regression test. Stage 5: full suite, ≥3 simulations, Rhino 8 smoke test (§13), then PR into `sow/2026-Q3`.
-
----
-
-## 16. Branch and commit structure
+## 14. Branch and commit structure
 
 ```text
 base:    sow/2026-Q3          (always; also the PR target)
@@ -682,12 +570,12 @@ M7  test: add SAM OpenStudio MVP regression fixtures
 M8  feat: expose OpenStudio conversion in Grasshopper and document workflow
 ```
 
-Stage-4 fix commits: `fix: <finding> (review P0/P1-<n>)` each with its regression test.
+Review-fix commits: `fix: <finding> (review P0/P1-<n>)`, each with its regression test.
 
 ---
 
-## 17. Estimates, risks, follow-ups
+## 15. Estimates, risks, follow-ups
 
-* Stage 1 ≈ one long working session (single run). Calendar ≈ **2–4 days** including Codex review turnaround and the fix round — replacing the original 25–36 engineering-day phased estimate.
+* Estimate ≈ **2–4 days** calendar, including independent review and the fix round — replacing the original 25–36 engineering-day phased estimate.
 * Highest risks: SDK/CLI version gate outcome (§11.1); x64 native deployment into Rhino 8 (mitigated by the mandatory smoke test); SAM internal-condition units (mitigated by mapping docs); profile calendar semantics (leap years, timestep).
 * Follow-on projects (unchanged): AirSystem/detailed HVAC (Roadmap Phase 5), TAS-vs-OpenStudio validation harness (Roadmap Phase 3), AI-assisted QA (Roadmap Phase 4), richer results import, `ScheduleRuleset` compression.

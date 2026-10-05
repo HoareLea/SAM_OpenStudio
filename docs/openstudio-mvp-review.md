@@ -1,6 +1,6 @@
 # SAM → OpenStudio MVP — independent review
 
-**Reviewer:** independent senior C# building-performance engineer (Stage 3/4 combined session)
+**Reviewer:** independent senior C# building-performance engineer
 **Date:** 2026-07-19
 **Branch:** `feature/analytical-model-to-openstudio-mvp` (base `sow/2026-Q3` @ 94dfce9)
 **Contract:** [SAM_OpenStudio_MVP_Implementation_Plan.md](SAM_OpenStudio_MVP_Implementation_Plan.md)
@@ -43,8 +43,8 @@ recorded and resolved as **P1-06**.
 | P2-02 | P2 | `SanitizeName` kept `'` and `"`; such names broke the SQL extraction query and the zone's results were silently dropped | Resolved `8c3367f` |
 
 Environment note: the prebuilt SAM/SAM_SQLite assemblies under `SAM\build` and
-`SAM_SQLite\build` were missing on this machine (only third-party DLLs present). Per the task
-brief they were rebuilt **without modifying sibling source**:
+`SAM_SQLite\build` were missing on this machine (only third-party DLLs present). They were
+rebuilt **without modifying sibling source**:
 `dotnet build ..\SAM\SAM.sln -c Debug` and `dotnet build ..\SAM_SQLite\SAM_SQLite.sln -c Debug`
 (default platform; both completed with 0 errors; sibling git trees remained clean before and
 after). The same wipe recurred twice more during the session (an unrelated concurrent process on
@@ -466,7 +466,7 @@ focused test and then the complete suite. No existing milestone commit was rewri
 **Environmental note (not an MVP defect):** during this session a second, unrelated process on
 this shared machine rebuilt the entire SAM suite and started a Rhino 8 instance (pid 5412,
 started 11:37) with the SAM GHAs loaded from `%APPDATA%\SAM`. It twice wiped the prebuilt
-`SAM\build` / `SAM_SQLite\build` assemblies (rebuilt by this session each time, per the brief —
+`SAM\build` / `SAM_SQLite\build` assemblies (rebuilt each time —
 no sibling source touched) and then locked the `.gha` files in `%APPDATA%\SAM`, so the
 **pre-existing** post-build deploy copy (`build\*.dll → %APPDATA%\SAM`, unchanged from the base
 branch and out of MVP scope) fails with `MSB3073` while Rhino holds those files. All projects

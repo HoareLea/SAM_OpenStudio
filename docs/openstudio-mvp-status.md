@@ -1,7 +1,7 @@
-# OpenStudio MVP — run status (handover file)
+# OpenStudio MVP — status
 
-Updated at every milestone gate so any fresh session can resume from the last
-completed milestone. See [SAM_OpenStudio_MVP_Implementation_Plan.md](SAM_OpenStudio_MVP_Implementation_Plan.md) §13.
+Updated at every milestone gate with the last completed milestone.
+See [SAM_OpenStudio_MVP_Implementation_Plan.md](SAM_OpenStudio_MVP_Implementation_Plan.md) §13.
 
 ## Current state
 
@@ -81,7 +81,7 @@ errors occurred.
 - Heating-only / cooling-only conditioning unsupported (both setpoint profiles required) — SAM_LadybugTools parity.
 - Ideal Loads uses EnergyPlus object defaults; no capacity/air-flow limits, economizer, heat recovery or humidity control.
 - Opaque gas cavities become resistance-only `OS:Material:AirGap` layers (R = 1/h from SAM's cavity conductance); the convective/radiative split of the cavity is not modelled beyond that (standard EnergyPlus approach).
-- **Environment note (this machine only):** an unrelated concurrent process rebuilt the SAM suite and started Rhino 8 (pid 5412) with the SAM GHAs loaded from `%APPDATA%\SAM`; while it runs, the *pre-existing* post-build deploy copy fails (`MSB3073`, locked `.gha` targets) and `SAM\build` / `SAM_SQLite\build` prebuilts were twice wiped (rebuilt by this session per the brief; sibling sources untouched). All projects compile; the full-solution build is green on a machine without that Rhino session.
+- Post-build deploy copy to `%APPDATA%\SAM` fails (`MSB3073`) while Rhino 8 holds the `.gha` targets locked (pre-existing behaviour); close Rhino before building. All projects compile regardless.
 
 ## MVP acceptance checklist (plan §4 definition of success)
 
@@ -99,31 +99,4 @@ errors occurred.
 | 10 | Schedules and internal gains reproduced | DONE | 8760-value spot checks; weekly-profile calendar alignment tested; density assertions |
 | 11 | Actionable diagnostics, no silent substitution | DONE | SAM-OS-* error paths tested; no-silent-drop panel check; kernel-failure isolation; leap-truncation warning; profile-gap error |
 
-Remaining before merge (workflow stages): **human Rhino 8 smoke test** (Stage 5, plan §13),
-then PR into sow/2026-Q3.
-
-## Resume commands
-
-```
-cd "<user>\Documents\GitHub\SAM-BIM\SAM_OpenStudio"
-git checkout feature/analytical-model-to-openstudio-mvp
-dotnet build SAM_OpenStudio.sln -c Debug -p:Platform=x64
-dotnet test tests/SAM.Analytical.OpenStudio.Tests/SAM.Analytical.OpenStudio.Tests.csproj -c Debug -p:Platform=x64
-```
-
-If `SAM\build` or `SAM_SQLite\build` prebuilt DLLs are missing again (they were twice wiped by a
-concurrent process on this machine), rebuild WITHOUT touching sibling source:
-
-```
-dotnet build ..\SAM\SAM.sln -c Debug
-dotnet build ..\SAM_SQLite\SAM_SQLite.sln -c Debug
-```
-
-Then perform the user Rhino 8 retest: open Rhino 8 + Grasshopper (assemblies are already
-deployed to `%APPDATA%\SAM` by the build), rerun the same analytical model as the 2026-07-19
-smoke test, and confirm: both components load; OSM/OSW generated; CLI exit code 0; SQL present;
-fatal = 0; severe = 0; heating/cooling results returned; no R-value error. Reference material:
-audit doc [openstudio-mvp-audit.md](openstudio-mvp-audit.md); review doc
-[openstudio-mvp-review.md](openstudio-mvp-review.md); LadybugTools semantic reference paths in
-plan §1; binding surface can be inspected via reflection on
-`%USERPROFILE%\.nuget\packages\openstudio\3.10.0\build\netstandard2.0\x64\OpenStudio.dll`.
+Remaining before merge: **Rhino 8 smoke test** (plan §13), then PR into sow/2026-Q3.

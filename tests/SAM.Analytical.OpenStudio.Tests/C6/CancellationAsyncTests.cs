@@ -155,7 +155,7 @@ namespace SAM.Analytical.OpenStudio.Tests
         [Test]
         public void RelativeEpwPath_OswWeatherFile_ResolvesFromTheRunDirectory()
         {
-            // Codex review P2: with UseUniqueRunDirectory (the default) the OSW is written into a
+            // With UseUniqueRunDirectory (the default) the OSW is written into a
             // Guid subdirectory, but weather_file was recorded exactly as supplied. OpenStudio
             // resolves weather_file relative to the OSW, so a relative EPW path that exists from
             // the caller's working directory becomes unreachable and the run finds no weather.

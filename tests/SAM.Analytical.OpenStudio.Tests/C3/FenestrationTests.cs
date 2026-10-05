@@ -193,7 +193,7 @@ namespace SAM.Analytical.OpenStudio.Tests
         [Test]
         public void SimpleGlazingFallback_ApertureOverrides_AreNotCacheCollided()
         {
-            // Codex review (PR #8, P2): the fallback takes U/SHGC/visible transmittance from the
+            // The fallback takes U/SHGC/visible transmittance from the
             // Aperture before the shared ApertureConstruction, but the cache key held only the
             // construction Guid and direction. Two apertures sharing one construction with
             // different aperture-level overrides therefore collided: the second window silently

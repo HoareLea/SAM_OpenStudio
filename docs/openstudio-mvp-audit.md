@@ -22,7 +22,7 @@ The CLI smoke test still exercises `OSVersion::VersionTranslator` for robustness
 
 - .NET SDK 10.0.302; runtimes include .NET 8.0.14 → net8.0 test project runs natively.
 - SAM prebuilt assemblies present at `..\SAM\build\` (SAM.Core/Geometry/Analytical/Weather) — consumed via existing HintPath convention; sibling repos untouched.
-- Rhino 8 installed (`C:\Program Files\Rhino 8`) → the mandatory Stage-5 Rhino smoke test is feasible on this machine.
+- Rhino 8 installed (`C:\Program Files\Rhino 8`) → the mandatory pre-PR Rhino smoke test is feasible on this machine.
 - **Platform constraint:** the OpenStudio NuGet `build\netstandard2.0\OpenStudio.targets` raises an *error* unless `$(Platform)` is `x64` or `x86`. All builds/tests must pass `-p:Platform=x64` (the test project also defaults its own Platform to x64, mirroring the Grasshopper projects).
 - Package layout: managed `OpenStudio.dll` + native `openstudiolib.dll`, `openstudio_csharp.dll`, `openstudio_model_csharp.dll`, `openstudio_translators_csharp.dll` under `build\netstandard2.0\x64\`, injected as Reference + copied as Content → natives flow transitively to test and Grasshopper outputs.
 
